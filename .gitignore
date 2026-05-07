@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+.env.*
+!.env.example
+!.env.*.example
+
+# Appium local extensions / state
+.appium/
+.test-state/
+
+# Test reports / generated artifacts
+reports/runs/*
+!reports/runs/.gitkeep
+reports/case-coverage.json
+allure-report/
+allure-results/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

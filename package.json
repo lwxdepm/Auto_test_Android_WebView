@@ -1,0 +1,58 @@
+{
+  "name": "androd-auto-test",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "doctor": "set APPIUM_HOME=%CD%\\.appium&& tsx src/scripts/doctor.ts",
+    "appium:install:driver": "set APPIUM_HOME=%CD%\\.appium&& appium driver install uiautomator2",
+    "appium": "set APPIUM_HOME=%CD%\\.appium&& appium --address 127.0.0.1 --port 4723 --relaxed-security",
+    "test:android:smoke": "wdio run wdio.android.conf.ts --suite smoke",
+    "test:android:login": "wdio run wdio.android.conf.ts --suite login",
+    "test:android:auth-state": "wdio run wdio.android.conf.ts --suite authState",
+    "test:android:webview": "wdio run wdio.android.conf.ts --suite webview",
+    "test:android:navigation": "wdio run wdio.android.conf.ts --suite navigation",
+    "test:android:reading": "wdio run wdio.android.conf.ts --suite reading",
+    "test:android:chat-fast": "wdio run wdio.android.conf.ts --suite chatFast",
+    "test:android:profile-fast": "wdio run wdio.android.conf.ts --suite profileFast",
+    "test:android:account-fast": "wdio run wdio.android.conf.ts --suite accountFast",
+    "test:android:materials-fast": "wdio run wdio.android.conf.ts --suite materialsFast",
+    "test:android:medical-fast": "wdio run wdio.android.conf.ts --suite medicalFast",
+    "test:android:extended-fast": "wdio run wdio.android.conf.ts --suite extendedFast",
+    "test:android:all": "wdio run wdio.android.conf.ts",
+    "cases:coverage": "tsx src/scripts/sync-cases.ts",
+    "typecheck": "tsc --noEmit",
+    "appium:driver:list": "set APPIUM_HOME=%CD%\\.appium&& appium driver list --installed",
+    "doctor:env": "set APPIUM_HOME=%CD%\\.appium&& tsx src/scripts/doctor.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@wdio/allure-reporter": "^9.0.0",
+    "@wdio/appium-service": "^9.0.0",
+    "@wdio/cli": "^9.0.0",
+    "@wdio/globals": "^9.0.0",
+    "@wdio/junit-reporter": "^9.0.0",
+    "@wdio/local-runner": "^9.0.0",
+    "@wdio/mocha-framework": "^9.0.0",
+    "@wdio/spec-reporter": "^9.0.0",
+    "appium": "^3.4.0",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "webdriverio": "^9.0.0",
+    "@wdio/types": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@10.0.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "appium",
+      "edgedriver",
+      "esbuild",
+      "geckodriver",
+      "sharp"
+    ]
+  }
+}

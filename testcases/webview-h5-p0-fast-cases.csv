@@ -1,0 +1,29 @@
+﻿测试用例ID,功能模块,子功能,难度,优先级,测试步骤/描述,预期结果,自动化建议,前置条件/备注
+CX-WV-BASE-001,启动,App 启动 WebView,Easy,P0,启动 App → 切换 WebView Context,成功进入 WebView，可获取 URL 和页面文本,是,每次套件启动前置
+CX-WV-BASE-002,登录,正确验证码登录,Easy,P0,输入手机号 → 获取验证码 → 输入正确验证码 → 勾选协议 → 登录,登录成功，进入 /chat 或 /profile,是,正常测试账号
+CX-WV-BASE-017,登录态,token失效自动退出,Med,P0,手动写入过期/错误 `cx-token` → 打开 /chat 并触发任一需登录接口,收到401后清除 token/consents/needsProfile，本地状态清零并跳回 /login,是,覆盖 WebView 持久化 token 异常
+CX-WV-BASE-018,登录态,切账号缓存隔离,Med,P0,A账号产生会话/健康档案 → 登出 → B账号登录并打开侧边栏/健康档案,不出现 A 账号会话、消息、档案或授权缓存,是,auth slice 会重置 chat/medical store；GET 带 no-cache
+CX-WV-BASE-020,WebView,深链未登录重定向,Easy,P0,清登录态后直接打开 /chat/:sessionId、/medical-records、/materials 等登录页外路由,统一重定向 /login；不会白屏或停留空壳页面,是,AuthGuard + BrowserRouter/Nginx fallback
+CX-PROFILE-013,个人信息,首次强制资料不可跳过,Easy,P0,新账号首次登录进入 /profile,页面不展示“跳过，直接进入对话”；必须完整填写后才能进入 /chat,是,`requireCompleteProfile && !isEditMode`
+CX-CHAT-001,对话,对话页加载,Easy,P0,登录后进入 /chat,展示橙欣健康标题、欢迎语、输入框,是,
+CX-CHAT-004,对话,文字输入发送,Med,P0,输入短问题 → 点击发送,用户消息出现，AI 回复区域开始输出,是,不判断答案质量
+CX-CHAT-008,对话,停止生成,Med,P0,发送问题 → 流式生成中点击停止,生成停止，页面显示已中断或停止态,是,需在流式过程中点击
+CX-CHAT-010,对话,新对话,Easy,P0,点击右上角新对话按钮,清空当前消息，回到新对话欢迎态,是,
+CX-INPUT-002,输入框,输入后按钮变化,Easy,P0,输入文字,语音按钮切换为发送按钮,是,
+CX-INPUT-005,输入框,上传图片预览,Med,P0,选择 JPG/PNG 图片,图片预览显示在输入框上方,是,
+CX-NAV-001,侧边栏,打开侧边栏,Easy,P0,在 /chat 点击左上角菜单,侧边栏打开，显示橙欣健康,是,
+CX-NAV-004,侧边栏,进入健康档案,Easy,P0,打开侧边栏 → 点击健康档案,进入 /medical-records,是,可能有授权弹窗
+CX-NAV-010,侧边栏,进入阅读设置,Easy,P0,打开侧边栏 → 点击阅读设置,进入 /reading-settings 页面，展示字体大小三档,是,当前代码已有入口
+CX-WV-COMPAT-001,WebView兼容,首屏高度与白屏兜底,Easy,P0,在目标 Android WebView 启动登录页/对话页,页面使用完整可视高度，无0高度白屏、无底部异常空白,是,`--app-height` 100vh/100dvh 兜底
+CX-WV-COMPAT-002,WebView兼容,软键盘不遮挡输入框,Med,P0,进入 /chat 聚焦输入框唤起软键盘 → 输入多行文字,InputBar 跟随键盘上浮；发送按钮可见可点；消息区可滚动,是,visualViewport 写入 --keyboard-offset
+CX-WV-COMPAT-003,WebView兼容,系统返回层级,Med,P0,在健康档案上传页/详情页、材料详情页、阅读设置页按 Android 系统返回,按产品预期回列表/回聊天/关闭侧栏，不直接退出 App 或白屏,半自动,需 App 容器返回键策略配合
+CX-WV-COMPAT-004,WebView兼容,深链刷新/重进,Med,P0,登录态下直接打开或刷新 /chat/:sessionId、/profile?mode=edit、/medical-records,前端路由可恢复；后端静态资源 fallback 正常；无404白屏,是,BrowserRouter 需服务端 fallback
+CX-WV-COMPAT-005,WebView文件,相册选择文件,Med,P0,在聊天图片上传或 OCR 上传点击相册/加号,Android WebView 弹出系统文件选择器，选图后 H5 收到 File 并显示预览,半自动,需 App 开启 file chooser 支持
+CX-READ-001,阅读设置,页面进入,Easy,P0,侧边栏点击阅读设置,进入 /reading-settings，展示“小/中/大”三档卡片,是,
+CX-READ-002,阅读设置,三档切换选中态,Easy,P0,依次点击小/中/大字体,对应卡片显示选中态，其他卡片取消选中,是,aria-pressed 可辅助断言
+CX-CONSENT-002,健康授权,同意授权,Easy,P0,点击同意,弹窗关闭，进入健康档案页,是,
+CX-MED-001,健康档案,页面加载,Easy,P0,从侧边栏进入健康档案,展示健康档案标题、病历档案、病历文档,是,
+CX-MED-004,病历档案,编辑入口,Easy,P0,点击病历档案“编辑”,展开编辑表单,是,
+CX-MED-017,病历档案,保存修改,Easy,P0,修改任一结构化字段 → 保存,保存成功，退出编辑态，新数据可见,是,
+CX-OCR-007,病历上传,不支持格式,Easy,P0,上传 txt/HEIC/TIFF 等不支持格式,提示不支持图片格式，请转 JPG/PNG,是,fast 推荐
+CX-WV-BASE-010,登出,正常退出登录,Easy,P0,登录后打开侧边栏 → 点击退出登录,返回登录页，本地 token 清除,是,
