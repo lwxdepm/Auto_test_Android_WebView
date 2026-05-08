@@ -1,7 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { loadCaseManifest } from '../config/case-manifest.js'
-import { ensureRunContext } from '../core/run-context.js'
 
 function walk(dir: string): string[] {
   if (!fs.existsSync(dir)) return []
@@ -48,10 +47,15 @@ const result = {
   notImplementedCases: notImplemented,
 }
 
-const run = ensureRunContext()
-fs.writeFileSync(path.join(run.runDir, 'case-coverage.json'), JSON.stringify(result, null, 2))
-fs.mkdirSync(path.resolve(process.cwd(), 'reports'), { recursive: true })
-fs.writeFileSync(path.resolve(process.cwd(), 'reports', 'case-coverage.json'), JSON.stringify(result, null, 2))
+const outputs = [path.resolve(process.cwd(), 'reports', 'case-coverage.json')]
+if (process.env.TEST_RUN_DIR) {
+  outputs.unshift(path.join(process.env.TEST_RUN_DIR, 'case-coverage.json'))
+}
+
+for (const output of outputs) {
+  fs.mkdirSync(path.dirname(output), { recursive: true })
+  fs.writeFileSync(output, JSON.stringify(result, null, 2))
+}
 
 console.log(JSON.stringify({
   csvTotal: result.csvTotal,
@@ -59,5 +63,5 @@ console.log(JSON.stringify({
   notImplemented: result.notImplemented,
   webviewBase: `${result.webviewBaseImplemented}/${result.webviewBaseTotal}`,
   webviewCompat: `${result.webviewCompatImplemented}/${result.webviewCompatTotal}`,
-  output: path.join(run.runDir, 'case-coverage.json'),
+  outputs,
 }, null, 2))

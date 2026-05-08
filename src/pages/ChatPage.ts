@@ -173,8 +173,10 @@ export class ChatPage {
     }, { timeout: 20000, interval: 300, timeoutMsg: '点击重试后未重新进入生成或完成状态' })
   }
 
-  static async clickAssistantCopyAndExpectSuccess(): Promise<void> {
-    await this.stubClipboardSuccess()
+  static async clickAssistantCopyAndExpectSuccess(options: { stubClipboard?: boolean } = {}): Promise<void> {
+    if (options.stubClipboard ?? true) {
+      await this.stubClipboardSuccess()
+    }
     const copy = $('button[title="复制"]')
     await copy.waitForClickable({ timeout: 10000 })
     await copy.click()

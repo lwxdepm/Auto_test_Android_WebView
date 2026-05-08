@@ -304,6 +304,17 @@ export class MedicalRecordsPage {
     }, { timeout: 10000, interval: 300, timeoutMsg: '上传病历页未打开' })
   }
 
+
+  static async clickNativeAlbumButton(): Promise<void> {
+    await selectors.exactText('从相册选择', 'button').waitForClickable({ timeout: 10000 })
+    await selectors.exactText('从相册选择', 'button').click()
+  }
+
+  static async clickNativeCameraButton(): Promise<void> {
+    await selectors.exactText('拍照', 'button').waitForClickable({ timeout: 10000 })
+    await selectors.exactText('拍照', 'button').click()
+  }
+
   static async expectUploadElements(): Promise<void> {
     const body = await H5Runtime.getBodyText()
     for (const text of ['上传病历图片', '拍照', '从相册选择', '取消']) {

@@ -4,6 +4,7 @@ import { H5Runtime } from '../core/h5-runtime.js'
 
 const tinyPngBase64 =
   'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII='
+const voiceTestTimeoutMs = 5000
 
 export class InputBarPage {
   static get textarea() {
@@ -16,6 +17,63 @@ export class InputBarPage {
 
   static get voiceButton() {
     return $('[aria-label="语音输入"], [title="语音输入"]')
+  }
+
+
+  static async clickNativeUploadButton(): Promise<void> {
+    await this.uploadButton.waitForClickable({ timeout: 10000 })
+    await this.uploadButton.click()
+  }
+
+  static async clickVoiceButton(): Promise<void> {
+    await this.voiceButton.waitForClickable({ timeout: voiceTestTimeoutMs })
+    await this.voiceButton.click()
+  }
+
+  static async getVoiceState() {
+    return H5Runtime.execute(() => {
+      const textarea = document.querySelector('textarea[placeholder="输入您的问题..."], textarea[placeholder="正在听您说..."]') as HTMLTextAreaElement | null
+      const stop = document.querySelector('button[aria-label="停止录音"], button[title^="停止录音"]') as HTMLButtonElement | null
+      const voice = document.querySelector('[aria-label="语音输入"], [title="语音输入"]') as HTMLButtonElement | null
+      return {
+        placeholder: textarea?.getAttribute('placeholder') ?? '',
+        value: textarea?.value ?? '',
+        hasStopRecordingButton: !!stop,
+        hasVoiceButton: !!voice,
+        voiceDisabled: voice?.disabled ?? null,
+        bodyText: document.body?.innerText ?? '',
+      }
+    })
+  }
+
+  static async expectRecordingStarted(): Promise<void> {
+    await browser.waitUntil(async () => {
+      const state = await this.getVoiceState().catch(() => null)
+      return !!state && (state.placeholder.includes('正在听') || state.hasStopRecordingButton)
+    }, { timeout: voiceTestTimeoutMs, interval: 300, timeoutMsg: '点击语音后 5s 内未进入录音态：未看到“正在听您说...”或“停止录音”按钮' })
+  }
+
+  static async stopRecording(): Promise<void> {
+    const stop = $('button[aria-label="停止录音"], button[title^="停止录音"]')
+    if (await stop.isDisplayed().catch(() => false)) {
+      await stop.click()
+      return
+    }
+    await this.clickVoiceButton()
+  }
+
+  static async expectRecordingStopped(): Promise<void> {
+    await browser.waitUntil(async () => {
+      const state = await this.getVoiceState().catch(() => null)
+      return !!state && !state.placeholder.includes('正在听') && !state.hasStopRecordingButton
+    }, { timeout: voiceTestTimeoutMs, interval: 300, timeoutMsg: '停止录音后 5s 内未恢复普通输入态' })
+  }
+
+  static async expectVoiceErrorContains(texts: string[]): Promise<void> {
+    await browser.waitUntil(async () => {
+      const body = await H5Runtime.getBodyText().catch(() => '')
+      return texts.some((text) => body.includes(text))
+    }, { timeout: voiceTestTimeoutMs, interval: 300, timeoutMsg: `5s 内未出现语音错误提示：${texts.join(' / ')}` })
   }
 
   static async getState() {

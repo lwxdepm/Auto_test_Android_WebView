@@ -119,6 +119,13 @@ async function flush() {
   await writeJson(path.join(run.runDir, 'summary.json'), summary(allRecords))
 }
 
+async function finalizeAndFlushRecord(record: CaseRecord, started: number): Promise<void> {
+  record.endedAt = new Date().toISOString()
+  record.durationMs = Date.now() - started
+  records.push(record)
+  await flush()
+}
+
 export function itCase(caseId: string, title: string, fn: () => Promise<void>): void
 export function itCase(caseId: string, title: string, options: ItCaseOptions, fn: () => Promise<void>): void
 export function itCase(caseId: string, title: string, optionsOrFn: ItCaseOptions | (() => Promise<void>), maybeFn?: () => Promise<void>): void {
@@ -133,6 +140,7 @@ export function itCase(caseId: string, title: string, optionsOrFn: ItCaseOptions
     const startedAt = new Date().toISOString()
     const started = Date.now()
     let shouldSkip = false
+    let flushed = false
     const record: CaseRecord = {
       caseId,
       title,
@@ -157,14 +165,19 @@ export function itCase(caseId: string, title: string, optionsOrFn: ItCaseOptions
       } else {
         record.status = 'failed'
         record.error = err instanceof Error ? err.message : String(err)
+        // 先把失败结果落盘，再采集截图/page-source/logcat。
+        // Bridge/native 专项失败时，设备可能停在系统 Photo Picker/权限弹窗等原生页面，
+        // 后续 artifact 采集可能因 UiAutomator2 原生树查询超时而卡住。
+        // 先 flush 可以保证即使用户 Ctrl+C 中断，summary.json/cases.json 也已经存在。
+        await finalizeAndFlushRecord(record, started)
+        flushed = true
         await ArtifactCollector.collect(caseId, err)
         throw err
       }
     } finally {
-      record.endedAt = new Date().toISOString()
-      record.durationMs = Date.now() - started
-      records.push(record)
-      await flush()
+      if (!flushed) {
+        await finalizeAndFlushRecord(record, started)
+      }
     }
 
     if (shouldSkip) {
