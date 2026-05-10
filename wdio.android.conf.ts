@@ -112,7 +112,9 @@ export const config = {
   ],
   mochaOpts: {
     ui: 'bdd',
-    timeout: 120000,
+    // 部分健康档案/账号切换用例需要准备远端测试数据，120s 容易被 Mocha 先行判为 Timeout，
+    // 导致 finally 恢复逻辑和自定义 summary 与 JUnit/Allure 不一致。
+    timeout: 240000,
   },
   /**
    * teardown 前主动切回 NATIVE_APP，并尽量提前清理 app。

@@ -97,8 +97,11 @@ export class AuthFlow {
   static async assertAppDataClearReturnsLogin(account: TestAccount = accounts.normal): Promise<void> {
     await this.loginExpectChat(account)
     await AppController.clearAppData()
+    // pm clear 后 WebView/Chromedriver 目标会短暂销毁重建，立即切 context 容易触发 headers timeout。
+    await browser.pause(2000)
     await AppController.launch()
-    await WebViewContext.switchToWebView()
+    await browser.pause(3000)
+    await WebViewContext.switchToWebView(60000)
     await LoginPage.waitForLoaded()
     await H5Runtime.expectLocalStorageMissing('cx-token')
   }

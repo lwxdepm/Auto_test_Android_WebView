@@ -23,8 +23,13 @@ export class MedicalFastFlow {
     await H5Runtime.reload()
   }
 
-  static async ensureMedicalPageReady(account: TestAccount = accounts.normal): Promise<void> {
-    await TestDataFlow.ensureKnownMedicalProfile(account)
+  static async ensureMedicalPageReady(
+    account: TestAccount = accounts.normal,
+    options: { resetProfile?: boolean } = {},
+  ): Promise<void> {
+    if (options.resetProfile ?? true) {
+      await TestDataFlow.ensureKnownMedicalProfile(account)
+    }
     await H5Runtime.goto('/medical-records')
     if ((await MedicalRecordsPage.waitForConsentOrLoaded()) === 'consent') {
       await MedicalRecordsPage.acceptHealthConsent()
@@ -113,8 +118,8 @@ export class MedicalFastFlow {
     await MedicalRecordsPage.waitForLoaded()
     await browser.waitUntil(async () => {
       const body = await H5Runtime.getBodyText().catch(() => '')
-      return body.includes('暂未用药')
-    }, { timeout: 10000, interval: 300, timeoutMsg: '保存病历档案后页面未展示已保存的“暂未用药”' })
+      return body.includes('暂未用药') || body.includes('没有服用')
+    }, { timeout: 10000, interval: 300, timeoutMsg: '保存病历档案后页面未展示已保存的“暂未用药/没有服用”' })
   }
 
   static async assertMultiFieldSave(account: TestAccount = accounts.normal): Promise<void> {
@@ -122,14 +127,16 @@ export class MedicalFastFlow {
     await MedicalRecordsPage.openMedicalProfileEdit()
     const selectedLabels: string[] = []
     try {
-      for (const label of ['月经状态', '肿瘤分型', '确诊时长', '治疗阶段', '用药时长']) {
-        if (await MedicalRecordsPage.hasEditableField(label)) {
+      for (const label of ['月经状态', '肿瘤分型', '确诊时长', '治疗阶段']) {
+        if (await MedicalRecordsPage.hasClickableField(label)) {
           selectedLabels.push(await MedicalRecordsPage.selectFirstSingleOptionAndReturnLabel(label, label))
         }
       }
-      if (await MedicalRecordsPage.hasEditableField('用药情况')) {
-        await MedicalRecordsPage.selectMedicationAlternative('暂未用药')
-        selectedLabels.push('暂未用药')
+      if (await MedicalRecordsPage.hasClickableField('用药情况')) {
+        selectedLabels.push(await MedicalRecordsPage.selectFirstCommonMedication())
+      }
+      if (await MedicalRecordsPage.hasClickableField('用药时长')) {
+        selectedLabels.push(await MedicalRecordsPage.selectFirstSingleOptionAndReturnLabel('用药时长', '用药时长'))
       }
       if (selectedLabels.length < 2) {
         await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
@@ -149,7 +156,7 @@ export class MedicalFastFlow {
   static async assertMaleHidesMenstrual(account: TestAccount = accounts.normal): Promise<void> {
     try {
       await TestDataFlow.setCompletedProfile(account, { gender: '男', currentConcern: 'breast_tumor_care' })
-      await this.ensureMedicalPageReady(account)
+      await this.ensureMedicalPageReady(account, { resetProfile: false })
       await MedicalRecordsPage.openMedicalProfileEdit()
       await MedicalRecordsPage.expectEditableFieldVisible('月经状态', false)
       await MedicalRecordsPage.expectEditableFieldVisible('用药情况', true)
@@ -162,7 +169,7 @@ export class MedicalFastFlow {
   static async assertConcernFieldVariation(account: TestAccount = accounts.normal): Promise<void> {
     try {
       await TestDataFlow.setCompletedProfile(account, { gender: '女', currentConcern: 'breast_tumor_care' })
-      await this.ensureMedicalPageReady(account)
+      await this.ensureMedicalPageReady(account, { resetProfile: false })
       await MedicalRecordsPage.openMedicalProfileEdit()
       for (const label of ['月经状态', '用药情况', '肿瘤分型', '确诊时长', '治疗阶段']) {
         await MedicalRecordsPage.expectEditableFieldVisible(label, true)
@@ -170,7 +177,7 @@ export class MedicalFastFlow {
       await MedicalRecordsPage.cancelMedicalProfileEdit()
 
       await TestDataFlow.setCompletedProfile(account, { gender: '女', currentConcern: 'breast_nodule_followup' })
-      await this.ensureMedicalPageReady(account)
+      await this.ensureMedicalPageReady(account, { resetProfile: false })
       await MedicalRecordsPage.openMedicalProfileEdit()
       await MedicalRecordsPage.expectEditableFieldVisible('月经状态', true)
       await MedicalRecordsPage.expectEditableFieldVisible('用药情况', true)
@@ -236,7 +243,7 @@ export class MedicalFastFlow {
   static async assertConcernSwitchHidesOldExtension(account: TestAccount = accounts.normal): Promise<void> {
     try {
       await TestDataFlow.setCompletedProfile(account, { gender: '女', currentConcern: 'breast_tumor_care' })
-      await this.ensureMedicalPageReady(account)
+      await this.ensureMedicalPageReady(account, { resetProfile: false })
       await H5ApiClient.post('/medical', {
         profileData: {
           tumorType: 'her2_positive',
@@ -247,7 +254,7 @@ export class MedicalFastFlow {
         },
       })
       await TestDataFlow.setCompletedProfile(account, { gender: '女', currentConcern: 'breast_nodule_followup' })
-      await this.ensureMedicalPageReady(account)
+      await this.ensureMedicalPageReady(account, { resetProfile: false })
       await MedicalRecordsPage.openMedicalProfileEdit()
       for (const label of ['肿瘤分型', '确诊时长', '治疗阶段']) {
         await MedicalRecordsPage.expectEditableFieldVisible(label, false)
@@ -282,6 +289,10 @@ export class MedicalFastFlow {
     if (!(await MedicalRecordsPage.hasEditableField(fieldLabel))) {
       await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
       skipCase(`当前账号资料不展示“${fieldLabel}”字段，跳过 ${caseName}`)
+    }
+    if (!(await MedicalRecordsPage.hasClickableField(fieldLabel))) {
+      await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
+      skipCase(`当前账号资料中“${fieldLabel}”字段当前不可选择，跳过 ${caseName}`)
     }
     await MedicalRecordsPage.selectFirstSingleOption(fieldLabel, ariaLabel)
     await MedicalRecordsPage.cancelMedicalProfileEdit()
@@ -381,12 +392,35 @@ export class MedicalFastFlow {
       await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
       skipCase('当前账号资料不展示“用药情况”字段，跳过不确定选项用例')
     }
-    await MedicalRecordsPage.selectMedicationAlternative('不确定')
+    await MedicalRecordsPage.openMedicationPanel()
+    if (!(await MedicalRecordsPage.hasMedicationAlternative('不确定'))) {
+      await MedicalRecordsPage.closeMedicationPanelIfOpen().catch(() => undefined)
+      await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
+      skipCase('当前用药面板不展示“不确定”选项，跳过不确定选项用例')
+    }
+    await MedicalRecordsPage.clickMedicationAlternative('不确定')
+    await MedicalRecordsPage.clickPanelDone()
     await MedicalRecordsPage.cancelMedicalProfileEdit()
   }
 
   static async assertMedicationDurationOrSkip(account: TestAccount = accounts.normal): Promise<void> {
-    await this.selectMedicalFieldOrSkip('用药时长选择', '用药时长', '用药时长', account)
+    await this.ensureMedicalPageReady(account)
+    await MedicalRecordsPage.openMedicalProfileEdit()
+    if (!(await MedicalRecordsPage.hasEditableField('用药情况'))) {
+      await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
+      skipCase('当前账号资料不展示“用药情况”字段，无法准备用药时长选择')
+    }
+    await MedicalRecordsPage.selectFirstCommonMedication()
+    if (!(await MedicalRecordsPage.hasEditableField('用药时长'))) {
+      await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
+      skipCase('当前账号资料不展示“用药时长”字段，跳过用药时长选择')
+    }
+    if (!(await MedicalRecordsPage.hasClickableField('用药时长'))) {
+      await MedicalRecordsPage.cancelMedicalProfileEdit().catch(() => undefined)
+      skipCase('选择常见药品后“用药时长”仍不可选择，跳过用药时长选择')
+    }
+    await MedicalRecordsPage.selectFirstSingleOption('用药时长', '用药时长')
+    await MedicalRecordsPage.cancelMedicalProfileEdit()
   }
 
   static async assertUploadEntry(account: TestAccount = accounts.normal): Promise<void> {

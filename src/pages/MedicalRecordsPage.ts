@@ -127,6 +127,17 @@ export class MedicalRecordsPage {
     return this.fieldLabel(label).isDisplayed().catch(() => false)
   }
 
+  static async hasClickableField(label: string): Promise<boolean> {
+    return H5Runtime.execute((targetLabel) => {
+      const labels = Array.from(document.querySelectorAll('label'))
+      const labelEl = labels.find((el) => (el.textContent || '').includes(targetLabel))
+      const button = labelEl?.parentElement?.querySelector('button') as HTMLButtonElement | null
+      if (!button) return false
+      const style = getComputedStyle(button)
+      return !button.disabled && style.pointerEvents !== 'none' && style.visibility !== 'hidden' && style.display !== 'none'
+    }, label).catch(() => false)
+  }
+
   static async selectFirstSingleOption(label: string, ariaLabel = label): Promise<void> {
     await this.clickFieldTrigger(label)
     const first = $(`//*[@role="listbox" and @aria-label="${ariaLabel}"]//*[@role="option"][1]`)
@@ -144,16 +155,27 @@ export class MedicalRecordsPage {
 
   static async selectMedicationAlternative(label: '暂未用药' | '不确定'): Promise<void> {
     await this.openMedicationPanel()
+    await this.clickMedicationAlternative(label)
+    await this.clickPanelDone()
+  }
+
+  static async hasMedicationAlternative(label: '暂未用药' | '不确定'): Promise<boolean> {
+    return H5Runtime.execute((target) => {
+      return Array.from(document.querySelectorAll('button'))
+        .some((button) => button.textContent?.trim() === target)
+    }, label).catch(() => false)
+  }
+
+  static async clickMedicationAlternative(label: '暂未用药' | '不确定'): Promise<void> {
     await H5Runtime.execute((target) => {
       const btn = Array.from(document.querySelectorAll('button')).find((button) => button.textContent?.trim() === target) as HTMLButtonElement | undefined
       if (!btn) throw new Error(`未找到用药选项：${target}`)
       btn.scrollIntoView({ block: 'center', inline: 'nearest' })
       btn.click()
     }, label)
-    await this.clickPanelDone()
   }
 
-  static async selectFirstCommonMedication(): Promise<void> {
+  static async selectFirstCommonMedication(): Promise<string> {
     await this.openMedicationPanel()
     const label = await H5Runtime.execute(() => {
       const panelLabel = Array.from(document.querySelectorAll('div'))
@@ -185,6 +207,7 @@ export class MedicalRecordsPage {
       const body = await H5Runtime.getBodyText().catch(() => '')
       return !body.includes('常见药品') && (body.includes(label) || body.includes('已选'))
     }, { timeout: 5000, interval: 300, timeoutMsg: `选择常见药品后未展示已选状态：${label}` })
+    return label
   }
 
   static async enterCustomMedicationText(value: string): Promise<void> {

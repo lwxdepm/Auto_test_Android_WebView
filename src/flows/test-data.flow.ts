@@ -19,20 +19,21 @@ interface CommunicationCardRecord {
 }
 
 type DynamicAccountKind = 'materialsEmpty' | 'materialsCard' | 'noHealthConsent' | 'medicalPurge'
+type CompletedProfileOverrides = Partial<{
+  nickname: string
+  birthday: string
+  gender: '男' | '女'
+  currentConcern: 'breast_tumor_care' | 'breast_nodule_followup' | 'awaiting_exam_or_results' | 'not_sure_exploring' | 'other_breast_issue'
+}>
 
 const dynamicAccounts: Partial<Record<DynamicAccountKind, TestAccount>> = {}
 const completedProfilePhones = new Set<string>()
-const knownMedicalProfilePhones = new Set<string>()
+const knownMedicalProfileStates = new Map<string, string>()
 const communicationCardSeededPhones = new Set<string>()
 
 function completeProfilePayload(
   account: TestAccount,
-  overrides: Partial<{
-    nickname: string
-    birthday: string
-    gender: '男' | '女'
-    currentConcern: 'breast_tumor_care' | 'breast_nodule_followup' | 'awaiting_exam_or_results' | 'not_sure_exploring' | 'other_breast_issue'
-  }> = {},
+  overrides: CompletedProfileOverrides = {},
 ) {
   const suffix = account.phone.slice(-4) || Date.now().toString().slice(-4)
   return {
@@ -42,6 +43,10 @@ function completeProfilePayload(
     currentConcern: 'breast_tumor_care',
     ...overrides,
   }
+}
+
+function medicalProfileStateKey(overrides: CompletedProfileOverrides = {}): string {
+  return `${overrides.gender ?? '女'}:${overrides.currentConcern ?? 'breast_tumor_care'}`
 }
 
 function communicationCardSeedPayload(account: TestAccount) {
@@ -126,7 +131,7 @@ export class TestDataFlow {
 
   static async setCompletedProfile(
     account: TestAccount,
-    overrides: Parameters<typeof completeProfilePayload>[1] = {},
+    overrides: CompletedProfileOverrides = {},
   ): Promise<void> {
     if (!account.phone) {
       throw new Error(`${account.name} 未配置手机号，无法准备测试账号`)
@@ -140,7 +145,7 @@ export class TestDataFlow {
     await ChatPage.waitForLoaded()
 
     completedProfilePhones.add(account.phone)
-    knownMedicalProfilePhones.add(account.phone)
+    knownMedicalProfileStates.set(account.phone, medicalProfileStateKey(overrides))
   }
 
   static async ensureCompletedProfile(account: TestAccount): Promise<void> {
@@ -167,12 +172,13 @@ export class TestDataFlow {
     }
 
     await AuthFlow.ensureLoggedIn(account)
-    if (knownMedicalProfilePhones.has(account.phone)) return
+    const targetState = medicalProfileStateKey()
+    if (knownMedicalProfileStates.get(account.phone) === targetState) return
 
     await H5ApiClient.put('/medical/profile', completeProfilePayload(account))
     await H5Runtime.setLocalStorage('cx-needs-profile', 'false')
     await H5Runtime.setLocalStorage('cx-require-complete-profile', 'false')
-    knownMedicalProfilePhones.add(account.phone)
+    knownMedicalProfileStates.set(account.phone, targetState)
   }
 
   static async ensureCommunicationCard(account: TestAccount): Promise<void> {
