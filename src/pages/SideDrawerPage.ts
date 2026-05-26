@@ -61,14 +61,15 @@ export class SideDrawerPage {
     await browser.waitUntil(async () => {
       return H5Runtime.execute(() => {
         const metas = Array.from(document.querySelectorAll('div'))
-          .filter((el) => (el.textContent || '').includes('条消息 ·'))
+          // 只匹配具体历史 item 里的 meta 文本，避免命中包裹整个历史列表的外层 div。
+          .filter((el) => /^\d+\s*条消息\s*·/.test((el.textContent || '').trim()) && el.children.length === 0)
         return metas.length > 0
       }).catch(() => false)
     }, { timeout: 15000, interval: 300, timeoutMsg: '侧边栏未加载出任何历史会话' })
 
     await H5Runtime.execute(() => {
       const metas = Array.from(document.querySelectorAll('div'))
-        .filter((el) => (el.textContent || '').includes('条消息 ·'))
+        .filter((el) => /^\d+\s*条消息\s*·/.test((el.textContent || '').trim()) && el.children.length === 0)
       const content = metas[0]?.parentElement as HTMLElement | null
       if (!content) throw new Error('未找到最新历史会话可点击区域')
       content.click()

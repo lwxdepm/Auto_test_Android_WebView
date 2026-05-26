@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { buildEnvironmentReport, collectDeviceInfoFromAdb, readRunnerToolVersions } from './reporting.js'
 
 export interface RunContext {
   runId: string
@@ -50,23 +51,13 @@ export function ensureRunContext(): RunContext {
   process.env.TEST_RUN_STARTED_AT = startedAt
 
   safeWrite(path.join(runsRoot, 'latest-run.txt'), `${runId}\n${runDir}\n`)
-  safeWrite(path.join(runDir, 'environment.json'), JSON.stringify({
+  safeWrite(path.join(runDir, 'environment.json'), JSON.stringify(buildEnvironmentReport({
     runId,
     startedAt,
-    node: process.version,
-    platform: process.platform,
-    arch: process.arch,
-    cwd: projectRoot,
-    env: {
-      ANDROID_DEVICE_NAME: process.env.ANDROID_DEVICE_NAME,
-      ANDROID_PLATFORM_VERSION: process.env.ANDROID_PLATFORM_VERSION,
-      ANDROID_APP_PACKAGE: process.env.ANDROID_APP_PACKAGE,
-      APPIUM_HOST: process.env.APPIUM_HOST,
-      APPIUM_PORT: process.env.APPIUM_PORT,
-      WEBVIEW_CONTEXT_PATTERN: process.env.WEBVIEW_CONTEXT_PATTERN,
-      TEST_SUITE_NAME: process.env.TEST_SUITE_NAME,
-    },
-  }, null, 2))
+    projectRoot,
+    toolVersions: readRunnerToolVersions(projectRoot),
+    deviceInfo: collectDeviceInfoFromAdb(),
+  }), null, 2))
 
   context = { runId, projectRoot, runsRoot, runDir, artifactsDir, startedAt }
   return context

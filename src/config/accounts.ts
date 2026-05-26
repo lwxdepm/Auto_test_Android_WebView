@@ -51,6 +51,24 @@ export const accounts = {
     fixedCode: env.smsFixedCode,
     expectChatReady: true,
   } satisfies TestAccount,
+  medicalDoc: {
+    name: 'I-medical-doc',
+    phone: env.testPhoneMedicalDoc,
+    fixedCode: env.smsFixedCode,
+    expectChatReady: true,
+  } satisfies TestAccount,
+  business: {
+    name: 'J-business',
+    phone: env.testPhoneBusiness,
+    fixedCode: env.smsFixedCode,
+    expectChatReady: true,
+  } satisfies TestAccount,
+  materialsFull: {
+    name: 'K-materials-full',
+    phone: env.testPhoneMaterialsFull,
+    fixedCode: env.smsFixedCode,
+    expectChatReady: true,
+  } satisfies TestAccount,
   pendingDeletion: {
     name: 'G-pending-deletion',
     phone: env.testPhonePending,

@@ -36,15 +36,25 @@ export class ProfileFastFlow {
   }
 
   static async openRequiredProfile(account: TestAccount = accounts.needsProfile): Promise<void> {
-    const actualAccount = this.resolveRequiredProfileAccount(account)
-    if (!actualAccount.phone) {
-      skipCase('未配置 TEST_PHONE_NEEDS_PROFILE，跳过需要“未完善资料新账号”的 Profile 用例')
+    const maxAttempts = env.testPhoneNeedsProfileAutoIncrement ? 5 : 1
+    let lastPath = ''
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      const actualAccount = this.resolveRequiredProfileAccount(account)
+      if (!actualAccount.phone) {
+        skipCase('未配置 TEST_PHONE_NEEDS_PROFILE，跳过需要“未完善资料新账号”的 Profile 用例')
+      }
+      const path = await AuthFlow.loginWithFixedCode(actualAccount, { allowProfile: true })
+      if (path === '/profile') {
+        await ProfilePage.waitForLoaded()
+        return
+      }
+
+      lastPath = path
+      await this.cleanupRequiredProfileSession()
     }
-    const path = await AuthFlow.loginWithFixedCode(actualAccount, { allowProfile: true })
-    if (path !== '/profile') {
-      throw new Error(`需要未完善资料账号，登录后应进入 /profile，实际=${path}。请检查 TEST_PHONE_NEEDS_PROFILE 是否为新账号/needsProfile=true 账号。`)
-    }
-    await ProfilePage.waitForLoaded()
+
+    throw new Error(`需要未完善资料账号，登录后应进入 /profile，实际=${lastPath || 'unknown'}。请检查 TEST_PHONE_NEEDS_PROFILE 是否为新账号/needsProfile=true 账号；自动递增模式已尝试 ${maxAttempts} 个手机号。`)
   }
 
   static async restoreProfileFlags(): Promise<void> {
@@ -145,7 +155,7 @@ export class ProfileFastFlow {
       await ProfilePage.save()
       await ChatPage.waitForLoaded()
 
-      await MedicalFastFlow.ensureMedicalPageReady(account)
+      await MedicalFastFlow.ensureMedicalPageReady(account, { resetProfile: false })
       await MedicalRecordsPage.openMedicalProfileEdit()
       await MedicalRecordsPage.expectEditableFieldVisible('用药情况', true)
       await MedicalRecordsPage.expectEditableFieldVisible('月经状态', true)

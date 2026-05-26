@@ -1,12 +1,19 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
+import { resolveSuiteName } from '../core/reporting.js'
 
 dotenv.config()
 
 // 固定 Appium 3 扩展目录，避免 Appium 在 pnpm 项目中调用 npm install 修改当前工程依赖。
 // Windows npm/pnpm scripts 会设置同样的 APPIUM_HOME；这里兜底给 wdio/appium-service 使用。
 process.env.APPIUM_HOME ||= path.resolve(process.cwd(), '.appium')
+
+// 运行时状态文件必须固定解析到项目根目录，不能依赖启动命令的 cwd。
+// 否则从父目录用 `pnpm --dir Auto_test_Android_WebView ...` 或 IDE 启动时，
+// `.test-state/phone-sequence.json` 可能被写到不同目录，导致下一次运行又从 base 开始。
+const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 function bool(name: string, fallback = false): boolean {
   const raw = process.env[name]
@@ -35,36 +42,53 @@ function assertPhoneLike(name: string, value: string): void {
   }
 }
 
+function nextPhone(phone: string): string {
+  return String(BigInt(phone) + 1n).padStart(phone.length, '0')
+}
+
+function resolveProjectStateFile(stateFile: string): string {
+  return path.isAbsolute(stateFile) ? stateFile : path.resolve(projectRoot, stateFile)
+}
+
 function allocateIncrementalPhone(base: string, stateFile: string, poolKey: string, baseName: string): string {
   assertPhoneLike(baseName, base)
-  const resolvedStateFile = path.resolve(process.cwd(), stateFile)
-  let lastAllocated: string | undefined
+  const resolvedStateFile = resolveProjectStateFile(stateFile)
+  let nextCandidate: string | undefined
   let parsedState: Record<string, any> = {}
 
   try {
     parsedState = JSON.parse(fs.readFileSync(resolvedStateFile, 'utf8')) as Record<string, any>
-    if (parsedState[poolKey]?.base === base && parsedState[poolKey].lastAllocated) {
-      lastAllocated = parsedState[poolKey].lastAllocated
+    const existing = parsedState[poolKey]
+    if (existing?.base === base) {
+      if (existing.nextCandidate) {
+        nextCandidate = String(existing.nextCandidate)
+      } else if (existing.lastAllocated) {
+        // 兼容旧格式：旧状态只存 lastAllocated，下次从 lastAllocated + 1 开始。
+        nextCandidate = nextPhone(String(existing.lastAllocated))
+      }
     }
   } catch {
     // 第一次运行或状态文件不存在时从 base 开始。
   }
 
-  const next = lastAllocated
-    ? String(BigInt(lastAllocated) + 1n).padStart(base.length, '0')
-    : base
+  const allocated = nextCandidate || base
+  const next = nextPhone(allocated)
 
-  assertPhoneLike(`allocated ${poolKey}`, next)
+  assertPhoneLike(`allocated ${poolKey}`, allocated)
+  assertPhoneLike(`next ${poolKey}`, next)
 
   fs.mkdirSync(path.dirname(resolvedStateFile), { recursive: true })
   parsedState[poolKey] = {
     base,
-    lastAllocated: next,
+    lastAllocated: allocated,
+    nextCandidate: next,
+    stateFile: path.relative(projectRoot, resolvedStateFile),
+    allocatedCount: Number(parsedState[poolKey]?.allocatedCount || 0) + 1,
     updatedAt: new Date().toISOString(),
   }
   fs.writeFileSync(resolvedStateFile, JSON.stringify(parsedState, null, 2))
 
-  return next
+  return allocated
 }
 
 export const env = {
@@ -115,6 +139,15 @@ export const env = {
   testPhoneMedicalPurge: str('TEST_PHONE_MEDICAL_PURGE', ''),
   testPhoneMedicalPurgeAutoIncrement: bool('TEST_PHONE_MEDICAL_PURGE_AUTO_INCREMENT', true),
   testPhoneMedicalPurgeBase: str('TEST_PHONE_MEDICAL_PURGE_BASE', '19900050000'),
+  testPhoneMedicalDoc: str('TEST_PHONE_MEDICAL_DOC', ''),
+  testPhoneMedicalDocAutoIncrement: bool('TEST_PHONE_MEDICAL_DOC_AUTO_INCREMENT', false),
+  testPhoneMedicalDocBase: str('TEST_PHONE_MEDICAL_DOC_BASE', '19900060000'),
+  testPhoneBusiness: str('TEST_PHONE_BUSINESS', ''),
+  testPhoneBusinessAutoIncrement: bool('TEST_PHONE_BUSINESS_AUTO_INCREMENT', false),
+  testPhoneBusinessBase: str('TEST_PHONE_BUSINESS_BASE', '19900070000'),
+  testPhoneMaterialsFull: str('TEST_PHONE_MATERIALS_FULL', ''),
+  testPhoneMaterialsFullAutoIncrement: bool('TEST_PHONE_MATERIALS_FULL_AUTO_INCREMENT', true),
+  testPhoneMaterialsFullBase: str('TEST_PHONE_MATERIALS_FULL_BASE', '19900080000'),
   testPhonePending: str('TEST_PHONE_PENDING', '13800000003'),
 
   seedCommunicationCardBeforeCases: bool('SEED_COMMUNICATION_CARD_BEFORE_CASES', true),
@@ -130,7 +163,7 @@ export const env = {
   clearAppBeforeSuite: bool('CLEAR_APP_BEFORE_SUITE', false),
   recordLogcat: bool('RECORD_LOGCAT', true),
   reportKeepRuns: num('REPORT_KEEP_RUNS', 30),
-  testSuiteName: str('TEST_SUITE_NAME', 'webview-p0-fast'),
+  testSuiteName: resolveSuiteName(),
   restartAppCaseEnabled: bool('RESTART_APP_CASE_ENABLED', false),
   chatLongHistoryTurns: num('CHAT_LONG_HISTORY_TURNS', 16),
 }
@@ -218,6 +251,54 @@ export function allocateNextMedicalPurgePhone(): string {
   process.env.TEST_PHONE_MEDICAL_PURGE = allocated
   env.testPhoneMedicalPurge = allocated
   console.log(`[dynamic-env] TEST_PHONE_MEDICAL_PURGE=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneMedicalPurgeBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
+  return allocated
+}
+
+export function allocateNextMedicalDocPhone(): string {
+  if (!env.testPhoneMedicalDocAutoIncrement) {
+    return env.testPhoneMedicalDoc
+  }
+  const allocated = allocateIncrementalPhone(
+    env.testPhoneMedicalDocBase,
+    env.testPhoneNeedsProfileStateFile,
+    'medicalDoc',
+    'TEST_PHONE_MEDICAL_DOC_BASE',
+  )
+  process.env.TEST_PHONE_MEDICAL_DOC = allocated
+  env.testPhoneMedicalDoc = allocated
+  console.log(`[dynamic-env] TEST_PHONE_MEDICAL_DOC=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneMedicalDocBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
+  return allocated
+}
+
+export function allocateNextBusinessPhone(): string {
+  if (!env.testPhoneBusinessAutoIncrement) {
+    return env.testPhoneBusiness
+  }
+  const allocated = allocateIncrementalPhone(
+    env.testPhoneBusinessBase,
+    env.testPhoneNeedsProfileStateFile,
+    'business',
+    'TEST_PHONE_BUSINESS_BASE',
+  )
+  process.env.TEST_PHONE_BUSINESS = allocated
+  env.testPhoneBusiness = allocated
+  console.log(`[dynamic-env] TEST_PHONE_BUSINESS=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneBusinessBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
+  return allocated
+}
+
+export function allocateNextMaterialsFullPhone(): string {
+  if (!env.testPhoneMaterialsFullAutoIncrement) {
+    return env.testPhoneMaterialsFull
+  }
+  const allocated = allocateIncrementalPhone(
+    env.testPhoneMaterialsFullBase,
+    env.testPhoneNeedsProfileStateFile,
+    'materialsFull',
+    'TEST_PHONE_MATERIALS_FULL_BASE',
+  )
+  process.env.TEST_PHONE_MATERIALS_FULL = allocated
+  env.testPhoneMaterialsFull = allocated
+  console.log(`[dynamic-env] TEST_PHONE_MATERIALS_FULL=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneMaterialsFullBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
   return allocated
 }
 

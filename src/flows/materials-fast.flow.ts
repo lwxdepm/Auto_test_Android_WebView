@@ -116,18 +116,22 @@ export class MaterialsFastFlow {
   }
 
   static async assertPracticeList(account: TestAccount = accounts.normal): Promise<void> {
+    account = TestDataFlow.resolveMaterialsFullAccount(account)
+    await TestDataFlow.ensureCompletedProfile(account)
     await this.open(account)
     await MaterialsPage.selectTab('我的跟练卡')
     if (!(await MaterialsPage.hasPracticeCards())) {
-      skipCase('当前账号没有预置跟练卡，跳过跟练卡列表展示用例')
+      skipCase('当前材料完整账号没有预置跟练卡，跳过跟练卡列表展示用例')
     }
   }
 
   static async assertPracticeDetail(account: TestAccount = accounts.normal): Promise<void> {
+    account = TestDataFlow.resolveMaterialsFullAccount(account)
+    await TestDataFlow.ensureCompletedProfile(account)
     await this.open(account)
     await MaterialsPage.selectTab('我的跟练卡')
     if (!(await MaterialsPage.hasPracticeCards())) {
-      skipCase('当前账号没有预置跟练卡，跳过跟练卡详情用例')
+      skipCase('当前材料完整账号没有预置跟练卡，跳过跟练卡详情用例')
     }
     await MaterialsPage.openFirstPracticeCard()
   }

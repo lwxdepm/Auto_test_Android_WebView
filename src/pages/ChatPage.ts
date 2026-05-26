@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import { $, browser } from '@wdio/globals'
 import { selectors } from '../core/selectors.js'
 import { H5Runtime } from '../core/h5-runtime.js'
+import { describeChatReadyState, isChatPageReady, type ChatReadyState } from './chat-readiness.js'
 
 export class ChatPage {
   static get menuButton() {
@@ -20,16 +21,49 @@ export class ChatPage {
     return $('button[aria-label="关闭对话记录"]')
   }
 
-  static async waitForLoaded(): Promise<void> {
-    await browser.waitUntil(async () => {
-      const path = await H5Runtime.getPathname().catch(() => '')
-      const body = await H5Runtime.getBodyText().catch(() => '')
-      return path.startsWith('/chat') && body.includes('橙欣健康')
-    }, {
-      timeout: 20000,
-      interval: 500,
-      timeoutMsg: 'Chat 页面未加载完成。请确认 TEST_PHONE_A 是已完成资料的 active 账号。',
+  static async getReadyState(): Promise<ChatReadyState> {
+    return H5Runtime.execute(() => {
+      const bodyText = document.body?.innerText || ''
+      return {
+        href: window.location.href,
+        pathname: window.location.pathname,
+        title: document.title || '',
+        bodyText,
+        bodyTextLength: bodyText.trim().length,
+        hasRoot: !!document.querySelector('#root'),
+        hasMenuButton: !!document.querySelector('button[title="对话记录"], button[aria-label="对话记录"]'),
+        hasNewChatButton: !!document.querySelector('button[title="新对话"], button[aria-label="新对话"]'),
+        hasInput: !!document.querySelector('textarea[placeholder^="输入您的问题"]'),
+        hasWelcome: bodyText.includes('你好，我是橙小欣') || bodyText.includes('今天感觉怎么样'),
+      }
     })
+  }
+
+  static async waitForLoaded(timeout = 30000): Promise<void> {
+    let lastState: ChatReadyState | null = null
+    let lastCollectError = ''
+    try {
+      await browser.waitUntil(async () => {
+        try {
+          lastState = await this.getReadyState()
+          lastCollectError = ''
+          return isChatPageReady(lastState)
+        } catch (err) {
+          lastCollectError = err instanceof Error ? err.message : String(err)
+          return false
+        }
+      }, {
+        timeout,
+        interval: 500,
+        timeoutMsg: 'Chat 页面未加载完成',
+      })
+    } catch (err) {
+      const original = err instanceof Error ? err.message : String(err)
+      const collectSuffix = lastCollectError ? `；最近一次状态采集错误=${lastCollectError}` : ''
+      throw new Error(
+        `Chat 页面未加载完成：${describeChatReadyState(lastState)}${collectSuffix}；原始错误=${original}`,
+      )
+    }
   }
 
   static async openDrawer(): Promise<void> {

@@ -73,8 +73,7 @@ export class ChatFastFlow {
     await ChatPage.clickSuggestion(suggestion)
     await ChatPage.expectUserMessage(suggestion)
     await ChatPage.waitForGenerationStartedOrFinished()
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -93,8 +92,7 @@ export class ChatFastFlow {
     await InputBarPage.sendText(text)
     await ChatPage.expectUserMessage(text)
     await ChatPage.waitForGenerationStartedOrFinished()
-    if (await ChatPage.waitForStopGeneratingButton(3000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(3000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -106,8 +104,7 @@ export class ChatFastFlow {
     await browser.pause(1100)
     await InputBarPage.sendText(text)
     await InputBarPage.expectTextSent(text)
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -120,8 +117,7 @@ export class ChatFastFlow {
     await InputBarPage.sendTextWithEnter(text)
     await ChatPage.expectUserMessage(text)
     await ChatPage.waitForGenerationStartedOrFinished()
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -136,7 +132,9 @@ export class ChatFastFlow {
     if (!(await ChatPage.waitForStopGeneratingButton(12000))) {
       skipCase('当前环境未展示 SSE 流式“停止生成”按钮，可能已切到 sync 传输或响应结束过快')
     }
-    await ChatPage.stopGenerating()
+    if (!(await ChatPage.stopGeneratingIfVisible())) {
+      skipCase('停止生成按钮出现后已快速消失，当前响应结束过快，无法稳定验证中断')
+    }
     await ChatPage.expectGenerationInterrupted()
   }
 
@@ -145,8 +143,7 @@ export class ChatFastFlow {
     await browser.pause(1100)
     await ChatPage.clickRetryAfterInterrupted()
     await ChatPage.expectRetryStartedOrFinished()
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -156,8 +153,7 @@ export class ChatFastFlow {
     const newText = `Appium编辑重试${Date.now().toString().slice(-6)}`
     await browser.pause(1100)
     await ChatPage.editInterruptedUserMessageAndRetry(newText)
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -331,8 +327,7 @@ export class ChatFastFlow {
     await ChatPage.expectUserMessage(bText)
     const bodyB = await H5Runtime.getBodyText()
     assert.ok(!bodyB.includes(aText), 'B 会话不应串入 A 会话消息')
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
 
@@ -342,8 +337,7 @@ export class ChatFastFlow {
       const body = await H5Runtime.getBodyText().catch(() => '')
       return body.includes(aText) && !body.includes(bText)
     }, { timeout: 15000, interval: 300, timeoutMsg: '回到 A 会话后未恢复 A 消息或串入 B 消息' })
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -401,8 +395,7 @@ export class ChatFastFlow {
     await InputBarPage.expectImageMessageSent(1)
     if (text) await ChatPage.expectUserMessage(text)
     await ChatPage.waitForGenerationStartedOrFinished()
-    if (await ChatPage.waitForStopGeneratingButton(1000)) {
-      await ChatPage.stopGenerating()
+    if (await ChatPage.waitForStopGeneratingButton(1000) && await ChatPage.stopGeneratingIfVisible()) {
       await ChatPage.expectGenerationInterrupted().catch(() => undefined)
     }
   }
@@ -458,8 +451,9 @@ export class ChatFastFlow {
       skipCase('当前环境未展示 SSE 流式“停止生成”按钮，无法验证流式中输入区按钮状态')
     }
     await ChatPage.expectStreamingInputState()
-    await ChatPage.stopGenerating()
-    await ChatPage.expectGenerationInterrupted().catch(() => undefined)
+    if (await ChatPage.stopGeneratingIfVisible()) {
+      await ChatPage.expectGenerationInterrupted().catch(() => undefined)
+    }
   }
 
   static async assertLongTextLimit(account: TestAccount = accounts.normal): Promise<void> {

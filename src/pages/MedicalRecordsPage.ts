@@ -127,11 +127,83 @@ export class MedicalRecordsPage {
     return this.fieldLabel(label).isDisplayed().catch(() => false)
   }
 
+  static async hasClickableField(label: string): Promise<boolean> {
+    return H5Runtime.execute((targetLabel) => {
+      const labels = Array.from(document.querySelectorAll('label'))
+      const labelEl = labels.find((el) => (el.textContent || '').includes(targetLabel))
+      const button = labelEl?.parentElement?.querySelector('button') as HTMLButtonElement | null
+      if (!button) return false
+      const style = getComputedStyle(button)
+      return !button.disabled && style.pointerEvents !== 'none' && style.visibility !== 'hidden' && style.display !== 'none'
+    }, label).catch(() => false)
+  }
+
   static async selectFirstSingleOption(label: string, ariaLabel = label): Promise<void> {
     await this.clickFieldTrigger(label)
-    const first = $(`//*[@role="listbox" and @aria-label="${ariaLabel}"]//*[@role="option"][1]`)
-    await first.waitForDisplayed({ timeout: 10000 })
-    await first.click()
+    await this.clickFirstVisibleListboxOption([ariaLabel, label])
+  }
+
+  private static async getFirstVisibleListboxOptionLabel(preferredAriaLabels: string[]): Promise<string | null> {
+    return H5Runtime.execute((labels) => {
+      const normalize = (value: string | null | undefined) => (value || '').replace(/\s+/g, '').trim()
+      const preferred = new Set(labels.map(normalize).filter(Boolean))
+      const isVisible = (el: Element) => {
+        const html = el as HTMLElement
+        const style = window.getComputedStyle(html)
+        return style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && style.opacity !== '0'
+          && html.getClientRects().length > 0
+      }
+      const listboxes = Array.from(document.querySelectorAll('[role="listbox"]')) as HTMLElement[]
+      const visibleListboxes = listboxes.filter(isVisible)
+      const picked = visibleListboxes.find((listbox) => preferred.has(normalize(listbox.getAttribute('aria-label'))))
+        ?? visibleListboxes[0]
+      const option = Array.from(picked?.querySelectorAll('[role="option"]') || [])
+        .find((el) => isVisible(el) && !(el as HTMLButtonElement).disabled)
+      return (option?.textContent || '').trim() || null
+    }, preferredAriaLabels).catch(() => null)
+  }
+
+  /**
+   * 单选下拉在不同前端版本中 aria-label 可能会随展示文案变化：
+   * 例如测试字段叫“用药时长”，当前页面实际渲染为“默认用药时长”。
+   * 这里优先按传入 aria-label 找，找不到时退化到当前可见的 listbox，避免
+   * Android WebView 中 XPath 过死导致“选项明明展示了但脚本找不到”。
+   */
+  private static async clickFirstVisibleListboxOption(preferredAriaLabels: string[]): Promise<string> {
+    await browser.waitUntil(async () => {
+      return !!(await this.getFirstVisibleListboxOptionLabel(preferredAriaLabels))
+    }, {
+      timeout: 10000,
+      interval: 200,
+      timeoutMsg: `单选下拉 option 未展示：${preferredAriaLabels.join(' / ')}`,
+    })
+
+    return H5Runtime.execute((labels) => {
+      const normalize = (value: string | null | undefined) => (value || '').replace(/\s+/g, '').trim()
+      const preferred = new Set(labels.map(normalize).filter(Boolean))
+      const isVisible = (el: Element) => {
+        const html = el as HTMLElement
+        const style = window.getComputedStyle(html)
+        return style.display !== 'none'
+          && style.visibility !== 'hidden'
+          && style.opacity !== '0'
+          && html.getClientRects().length > 0
+      }
+      const listboxes = Array.from(document.querySelectorAll('[role="listbox"]')) as HTMLElement[]
+      const visibleListboxes = listboxes.filter(isVisible)
+      const picked = visibleListboxes.find((listbox) => preferred.has(normalize(listbox.getAttribute('aria-label'))))
+        ?? visibleListboxes[0]
+      if (!picked) throw new Error(`未找到可见单选下拉：${labels.join(' / ')}`)
+      const option = Array.from(picked.querySelectorAll('[role="option"]'))
+        .find((el) => isVisible(el) && !(el as HTMLButtonElement).disabled) as HTMLElement | undefined
+      if (!option) throw new Error(`未找到可点击单选选项：${labels.join(' / ')}`)
+      const selected = (option.textContent || '').trim()
+      option.scrollIntoView({ block: 'center', inline: 'nearest' })
+      option.click()
+      return selected
+    }, preferredAriaLabels)
   }
 
   static async openMedicationPanel(): Promise<void> {
@@ -144,16 +216,56 @@ export class MedicalRecordsPage {
 
   static async selectMedicationAlternative(label: '暂未用药' | '不确定'): Promise<void> {
     await this.openMedicationPanel()
+    await this.clickMedicationAlternative(label)
+    await this.clickPanelDone()
+    await browser.waitUntil(async () => {
+      const body = await H5Runtime.getBodyText().catch(() => '')
+      return !body.includes('常见药品')
+    }, { timeout: 5000, interval: 200, timeoutMsg: '点击完成后用药情况面板未关闭' })
+  }
+
+  static async selectNoMedicationAndConfirm(): Promise<void> {
+    await this.openMedicationPanel()
+    if (!(await this.isMedicationAlternativePressed('暂未用药'))) {
+      await this.clickMedicationAlternative('暂未用药')
+    }
+    await browser.waitUntil(async () => this.isMedicationAlternativePressed('暂未用药'), {
+      timeout: 5000,
+      interval: 200,
+      timeoutMsg: '点击“暂未用药”后未进入选中状态',
+    })
+    await this.clickPanelDone()
+    await browser.waitUntil(async () => {
+      const body = await H5Runtime.getBodyText().catch(() => '')
+      return !body.includes('常见药品') && body.includes('没有服用') && body.includes('无需填写')
+    }, { timeout: 5000, interval: 200, timeoutMsg: '选择“暂未用药”完成后编辑态未展示“没有服用/无需填写”' })
+  }
+
+  static async hasMedicationAlternative(label: '暂未用药' | '不确定'): Promise<boolean> {
+    return H5Runtime.execute((target) => {
+      return Array.from(document.querySelectorAll('button'))
+        .some((button) => button.textContent?.trim() === target)
+    }, label).catch(() => false)
+  }
+
+  static async clickMedicationAlternative(label: '暂未用药' | '不确定'): Promise<void> {
     await H5Runtime.execute((target) => {
       const btn = Array.from(document.querySelectorAll('button')).find((button) => button.textContent?.trim() === target) as HTMLButtonElement | undefined
       if (!btn) throw new Error(`未找到用药选项：${target}`)
       btn.scrollIntoView({ block: 'center', inline: 'nearest' })
       btn.click()
     }, label)
-    await this.clickPanelDone()
   }
 
-  static async selectFirstCommonMedication(): Promise<void> {
+  static async isMedicationAlternativePressed(label: '暂未用药' | '不确定'): Promise<boolean> {
+    return H5Runtime.execute((target) => {
+      const btn = Array.from(document.querySelectorAll('button'))
+        .find((button) => button.textContent?.trim() === target) as HTMLButtonElement | undefined
+      return btn?.getAttribute('aria-pressed') === 'true'
+    }, label).catch(() => false)
+  }
+
+  static async selectFirstCommonMedication(): Promise<string> {
     await this.openMedicationPanel()
     const label = await H5Runtime.execute(() => {
       const panelLabel = Array.from(document.querySelectorAll('div'))
@@ -185,6 +297,7 @@ export class MedicalRecordsPage {
       const body = await H5Runtime.getBodyText().catch(() => '')
       return !body.includes('常见药品') && (body.includes(label) || body.includes('已选'))
     }, { timeout: 5000, interval: 300, timeoutMsg: `选择常见药品后未展示已选状态：${label}` })
+    return label
   }
 
   static async enterCustomMedicationText(value: string): Promise<void> {
@@ -375,6 +488,38 @@ export class MedicalRecordsPage {
     }, { timeout: 10000, interval: 300, timeoutMsg: '病历详情未打开' })
   }
 
+  static async openDocumentDetailByTitle(title: string): Promise<void> {
+    await browser.waitUntil(async () => {
+      const body = await H5Runtime.getBodyText().catch(() => '')
+      return body.includes(title)
+    }, { timeout: 10000, interval: 300, timeoutMsg: `病历列表未展示目标文档：${title}` })
+
+    await H5Runtime.execute((targetTitle) => {
+      const candidates = (Array.from(document.querySelectorAll('p, span, div')) as HTMLElement[])
+        .filter((node) => (node.textContent || '').includes(targetTitle))
+        .sort((a, b) => (a.textContent || '').length - (b.textContent || '').length)
+      const el = candidates[0]
+      if (!el) throw new Error(`未找到病历文档标题：${targetTitle}`)
+      el.scrollIntoView({ block: 'center', inline: 'nearest' })
+      el.click()
+    }, title)
+
+    await browser.waitUntil(async () => {
+      const body = await H5Runtime.getBodyText().catch(() => '')
+      return body.includes('删除此病历') || body.includes('返回列表')
+    }, { timeout: 10000, interval: 300, timeoutMsg: '病历详情未打开' })
+  }
+
+  static async deleteCurrentDocumentConfirm(): Promise<void> {
+    await H5Runtime.execute(() => {
+      window.confirm = () => true
+    })
+    const deleteButton = selectors.exactText('删除此病历', 'button')
+    await deleteButton.waitForClickable({ timeout: 10000 })
+    await deleteButton.click()
+    await this.waitForLoaded()
+  }
+
   static async attachUploadImages(options: {
     count?: number
     sizeBytes?: number
@@ -481,11 +626,7 @@ export class MedicalRecordsPage {
 
   static async selectFirstSingleOptionAndReturnLabel(label: string, ariaLabel = label): Promise<string> {
     await this.clickFieldTrigger(label)
-    const first = $(`//*[@role="listbox" and @aria-label="${ariaLabel}"]//*[@role="option"][1]`)
-    await first.waitForDisplayed({ timeout: 10000 })
-    const selected = (await first.getText()).trim()
-    await first.click()
-    return selected
+    return this.clickFirstVisibleListboxOption([ariaLabel, label])
   }
 
   static async savePendingCustomMedication(value: string): Promise<void> {
@@ -512,6 +653,14 @@ export class MedicalRecordsPage {
     await $('img[alt^="图片 "]').waitForDisplayed({ timeout: 10000 })
   }
 
+  static async openDocumentImageLightboxByTitle(title: string): Promise<void> {
+    await this.openDocumentDetailByTitle(title)
+    const image = $('img[alt^="病历图片 "]')
+    await image.waitForDisplayed({ timeout: 10000 })
+    await image.click()
+    await $('img[alt^="图片 "]').waitForDisplayed({ timeout: 10000 })
+  }
+
   static async expectLightboxAndClose(): Promise<void> {
     await $('img[alt^="图片 "]').waitForDisplayed({ timeout: 10000 })
     const close = await H5Runtime.execute(() => {
@@ -526,6 +675,18 @@ export class MedicalRecordsPage {
 
   static async expectDocumentDeleteCancelKeepsDetail(): Promise<void> {
     await this.openFirstDocumentDetail()
+    await H5Runtime.execute(() => {
+      window.confirm = () => false
+    })
+    const deleteButton = selectors.exactText('删除此病历', 'button')
+    await deleteButton.waitForClickable({ timeout: 10000 })
+    await deleteButton.click()
+    await browser.pause(500)
+    await deleteButton.waitForDisplayed({ timeout: 5000 })
+  }
+
+  static async expectDocumentDeleteCancelKeepsDetailByTitle(title: string): Promise<void> {
+    await this.openDocumentDetailByTitle(title)
     await H5Runtime.execute(() => {
       window.confirm = () => false
     })
