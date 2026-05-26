@@ -4,6 +4,13 @@ import { ensureRunContext } from './run-context.js'
 import { ArtifactCollector } from './artifacts.js'
 import { getCaseMeta } from '../config/case-manifest.js'
 import { env } from '../config/env.js'
+import {
+  buildRunSummary,
+  enrichFailureRecord,
+  inferFailureType,
+  writeQualitySummaryFile,
+  type FailureType,
+} from './reporting.js'
 
 export interface CaseRecord {
   caseId: string
@@ -19,6 +26,10 @@ export interface CaseRecord {
   error?: string
   tags?: string[]
   workerPid?: number
+  failureType?: FailureType
+  failureReason?: string
+  isBlocking?: boolean
+  isFlaky?: boolean
 }
 
 export class CaseSkippedError extends Error {
@@ -50,55 +61,6 @@ async function writeJson(file: string, value: unknown) {
   await fs.writeFile(file, JSON.stringify(value, null, 2))
 }
 
-function summary(allRecords: CaseRecord[]) {
-  const run = ensureRunContext()
-  const total = allRecords.length
-  const passed = allRecords.filter((r) => r.status === 'passed').length
-  const failed = allRecords.filter((r) => r.status === 'failed').length
-  const skipped = allRecords.filter((r) => r.status === 'skipped').length
-  const failedRecords = allRecords.filter((r) => r.status === 'failed')
-  const skippedRecords = allRecords.filter((r) => r.status === 'skipped')
-  const artifactDirFor = (caseId: string) =>
-    path.relative(run.runDir, path.join(run.artifactsDir, caseId.replace(/[^A-Za-z0-9_.-]/g, '_')))
-  return {
-    runId: run.runId,
-    suite: env.testSuiteName,
-    startedAt: run.startedAt,
-    endedAt: new Date().toISOString(),
-    total,
-    passed,
-    failed,
-    skipped,
-    failedCases: failedRecords.map((r) => r.caseId),
-    failedCaseDetails: failedRecords.map((r) => ({
-      caseId: r.caseId,
-      title: r.title,
-      reason: r.error || '',
-      module: r.module,
-      subFunction: r.subFunction,
-      priority: r.priority,
-      tags: r.tags,
-      durationMs: r.durationMs,
-      startedAt: r.startedAt,
-      endedAt: r.endedAt,
-      artifactDir: artifactDirFor(r.caseId),
-    })),
-    skippedCases: skippedRecords.map((r) => r.caseId),
-    skippedCaseDetails: skippedRecords.map((r) => ({
-      caseId: r.caseId,
-      title: r.title,
-      reason: r.error || '',
-      module: r.module,
-      subFunction: r.subFunction,
-      priority: r.priority,
-      tags: r.tags,
-      durationMs: r.durationMs,
-      startedAt: r.startedAt,
-      endedAt: r.endedAt,
-    })),
-  }
-}
-
 async function readExistingCases(file: string): Promise<CaseRecord[]> {
   try {
     const raw = await fs.readFile(file, 'utf8')
@@ -109,14 +71,33 @@ async function readExistingCases(file: string): Promise<CaseRecord[]> {
   }
 }
 
+async function readEnvironment(runDir: string): Promise<Record<string, unknown> | undefined> {
+  try {
+    return JSON.parse(await fs.readFile(path.join(runDir, 'environment.json'), 'utf8')) as Record<string, unknown>
+  } catch {
+    return undefined
+  }
+}
+
 async function flush() {
   const run = ensureRunContext()
   const casesFile = path.join(run.runDir, 'cases.json')
   const existing = await readExistingCases(casesFile)
   const external = existing.filter((r) => r.workerPid !== process.pid)
-  const allRecords = [...external, ...records].sort((a, b) => a.startedAt.localeCompare(b.startedAt))
+  const allRecords = [...external, ...records]
+    .map((record) => enrichFailureRecord(record))
+    .sort((a, b) => a.startedAt.localeCompare(b.startedAt))
+  const runSummary = buildRunSummary(allRecords, {
+    runId: run.runId,
+    suite: env.testSuiteName,
+    startedAt: run.startedAt,
+    endedAt: new Date().toISOString(),
+    runDir: run.runDir,
+    artifactsDir: run.artifactsDir,
+  })
   await writeJson(casesFile, allRecords)
-  await writeJson(path.join(run.runDir, 'summary.json'), summary(allRecords))
+  await writeJson(path.join(run.runDir, 'summary.json'), runSummary)
+  await writeQualitySummaryFile(run.runDir, runSummary, await readEnvironment(run.runDir))
 }
 
 async function finalizeAndFlushRecord(record: CaseRecord, started: number): Promise<void> {
@@ -165,6 +146,10 @@ export function itCase(caseId: string, title: string, optionsOrFn: ItCaseOptions
       } else {
         record.status = 'failed'
         record.error = err instanceof Error ? err.message : String(err)
+        record.failureType = inferFailureType(record.error)
+        record.failureReason = record.error
+        record.isBlocking = record.priority?.toUpperCase() === 'P0' || Boolean(record.tags?.some((tag) => tag.toLowerCase() === 'p0'))
+        record.isFlaky = record.failureType === 'flaky'
         // 先把失败结果落盘，再采集截图/page-source/logcat。
         // Bridge/native 专项失败时，设备可能停在系统 Photo Picker/权限弹窗等原生页面，
         // 后续 artifact 采集可能因 UiAutomator2 原生树查询超时而卡住。

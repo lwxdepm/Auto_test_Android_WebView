@@ -52,6 +52,9 @@ export const config = {
   maxInstances: 1,
   specs: ['./src/specs/**/*.spec.ts'],
   suites: {
+    // 精简 P0 冒烟：10 条核心链路，适合每次提测/回归前快速确认环境和主流程。
+    smokeCore: ['./src/specs/00-smoke-core.ts'],
+    // 历史 smoke 范围较大，保留兼容；更推荐日常先跑 smokeCore。
     smoke: [
       './src/specs/01-webview-start.spec.ts',
       './src/specs/02-login-basic.spec.ts',
@@ -90,6 +93,9 @@ export const config = {
     ],
     bridge: ['./src/specs/10-bridge-native.spec.ts'],
     bridgeSlow: ['./src/specs/11-bridge-native-slow.spec.ts'],
+    // 真实业务闭环/LLM 专项：独立运行，避免影响日常 legacy 快速回归稳定性。
+    business: ['./src/specs/12-business-llm-smoke.spec.ts'],
+    businessLlm: ['./src/specs/12-business-llm-smoke.spec.ts'],
   },
   capabilities,
   services: appiumService as Options.Testrunner['services'],

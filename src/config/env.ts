@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import dotenv from 'dotenv'
+import { resolveSuiteName } from '../core/reporting.js'
 
 dotenv.config()
 
@@ -138,6 +139,15 @@ export const env = {
   testPhoneMedicalPurge: str('TEST_PHONE_MEDICAL_PURGE', ''),
   testPhoneMedicalPurgeAutoIncrement: bool('TEST_PHONE_MEDICAL_PURGE_AUTO_INCREMENT', true),
   testPhoneMedicalPurgeBase: str('TEST_PHONE_MEDICAL_PURGE_BASE', '19900050000'),
+  testPhoneMedicalDoc: str('TEST_PHONE_MEDICAL_DOC', ''),
+  testPhoneMedicalDocAutoIncrement: bool('TEST_PHONE_MEDICAL_DOC_AUTO_INCREMENT', false),
+  testPhoneMedicalDocBase: str('TEST_PHONE_MEDICAL_DOC_BASE', '19900060000'),
+  testPhoneBusiness: str('TEST_PHONE_BUSINESS', ''),
+  testPhoneBusinessAutoIncrement: bool('TEST_PHONE_BUSINESS_AUTO_INCREMENT', false),
+  testPhoneBusinessBase: str('TEST_PHONE_BUSINESS_BASE', '19900070000'),
+  testPhoneMaterialsFull: str('TEST_PHONE_MATERIALS_FULL', ''),
+  testPhoneMaterialsFullAutoIncrement: bool('TEST_PHONE_MATERIALS_FULL_AUTO_INCREMENT', true),
+  testPhoneMaterialsFullBase: str('TEST_PHONE_MATERIALS_FULL_BASE', '19900080000'),
   testPhonePending: str('TEST_PHONE_PENDING', '13800000003'),
 
   seedCommunicationCardBeforeCases: bool('SEED_COMMUNICATION_CARD_BEFORE_CASES', true),
@@ -153,7 +163,7 @@ export const env = {
   clearAppBeforeSuite: bool('CLEAR_APP_BEFORE_SUITE', false),
   recordLogcat: bool('RECORD_LOGCAT', true),
   reportKeepRuns: num('REPORT_KEEP_RUNS', 30),
-  testSuiteName: str('TEST_SUITE_NAME', 'webview-p0-fast'),
+  testSuiteName: resolveSuiteName(),
   restartAppCaseEnabled: bool('RESTART_APP_CASE_ENABLED', false),
   chatLongHistoryTurns: num('CHAT_LONG_HISTORY_TURNS', 16),
 }
@@ -241,6 +251,54 @@ export function allocateNextMedicalPurgePhone(): string {
   process.env.TEST_PHONE_MEDICAL_PURGE = allocated
   env.testPhoneMedicalPurge = allocated
   console.log(`[dynamic-env] TEST_PHONE_MEDICAL_PURGE=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneMedicalPurgeBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
+  return allocated
+}
+
+export function allocateNextMedicalDocPhone(): string {
+  if (!env.testPhoneMedicalDocAutoIncrement) {
+    return env.testPhoneMedicalDoc
+  }
+  const allocated = allocateIncrementalPhone(
+    env.testPhoneMedicalDocBase,
+    env.testPhoneNeedsProfileStateFile,
+    'medicalDoc',
+    'TEST_PHONE_MEDICAL_DOC_BASE',
+  )
+  process.env.TEST_PHONE_MEDICAL_DOC = allocated
+  env.testPhoneMedicalDoc = allocated
+  console.log(`[dynamic-env] TEST_PHONE_MEDICAL_DOC=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneMedicalDocBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
+  return allocated
+}
+
+export function allocateNextBusinessPhone(): string {
+  if (!env.testPhoneBusinessAutoIncrement) {
+    return env.testPhoneBusiness
+  }
+  const allocated = allocateIncrementalPhone(
+    env.testPhoneBusinessBase,
+    env.testPhoneNeedsProfileStateFile,
+    'business',
+    'TEST_PHONE_BUSINESS_BASE',
+  )
+  process.env.TEST_PHONE_BUSINESS = allocated
+  env.testPhoneBusiness = allocated
+  console.log(`[dynamic-env] TEST_PHONE_BUSINESS=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneBusinessBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
+  return allocated
+}
+
+export function allocateNextMaterialsFullPhone(): string {
+  if (!env.testPhoneMaterialsFullAutoIncrement) {
+    return env.testPhoneMaterialsFull
+  }
+  const allocated = allocateIncrementalPhone(
+    env.testPhoneMaterialsFullBase,
+    env.testPhoneNeedsProfileStateFile,
+    'materialsFull',
+    'TEST_PHONE_MATERIALS_FULL_BASE',
+  )
+  process.env.TEST_PHONE_MATERIALS_FULL = allocated
+  env.testPhoneMaterialsFull = allocated
+  console.log(`[dynamic-env] TEST_PHONE_MATERIALS_FULL=${maskPhone(allocated)} (base=${maskPhone(env.testPhoneMaterialsFullBase)}, state=${env.testPhoneNeedsProfileStateFile})`)
   return allocated
 }
 

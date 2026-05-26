@@ -1,0 +1,223 @@
+﻿集合来源,测试用例ID,业务域,功能模块,子功能/闭环,优先级,难度,自动化类型,测试步骤/描述,预期结果,前置条件/备注,覆盖代码/接口,现有覆盖状态
+现有用例-可自动化,CX-WV-BASE-001,一、基础登录与 WebView 容器,启动,App 启动 WebView,P0,Easy,是,启动 App → 切换 WebView Context,成功进入 WebView，可获取 URL 和页面文本,每次套件启动前置,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-002,一、基础登录与 WebView 容器,登录,正确验证码登录,P0,Easy,是,输入手机号 → 获取验证码 → 输入正确验证码 → 勾选协议 → 登录,登录成功，进入 /chat 或 /profile,正常测试账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-003,一、基础登录与 WebView 容器,登录,错误验证码,P0,Easy,是,输入手机号 → 获取验证码 → 输入错误验证码 → 登录,提示验证码错误，不进入登录态页面,使用错误验证码,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-004,一、基础登录与 WebView 容器,登录,无效手机号,P0,Easy,是,输入错误格式手机号 → 点击获取验证码,前端提示手机号格式错误,无需真实手机号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-005,一、基础登录与 WebView 容器,登录,重复获取验证码,P0,Easy,是,获取验证码后 60 秒内再次点击,按钮禁用或显示倒计时，不重复发送,需规避短信频控污染,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-006,一、基础登录与 WebView 容器,登录,协议未勾选,P0,Easy,是,输入手机号验证码但不勾选协议 → 登录,提示需同意用户协议与隐私政策,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-007,一、基础登录与 WebView 容器,登录,用户协议弹窗,P1,Easy,是,点击用户协议,协议弹窗正常打开，可关闭,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-008,一、基础登录与 WebView 容器,登录,隐私政策弹窗,P1,Easy,是,点击隐私政策,隐私政策弹窗正常打开，可关闭,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-009,一、基础登录与 WebView 容器,登录态,App 数据清理后登录态,P0,Med,是,清 App 数据 → 启动 App,本地登录态被清理，回到登录页,会清本地数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-010,一、基础登录与 WebView 容器,登出,正常退出登录,P0,Easy,是,登录后打开侧边栏 → 点击退出登录,返回登录页，本地 token 清除,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-011,一、基础登录与 WebView 容器,登出,登出后返回,P0,Med,是,登出后执行系统返回,不应回到已登录页面,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-012,一、基础登录与 WebView 容器,WebView,页面刷新/重进,P1,Med,是,登录后关闭重启 App,未清数据情况下仍保持登录态,不要清 App 数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-013,一、基础登录与 WebView 容器,登录,验证码超时（5分钟TTL）,P1,Med,是/需测试钩子,获取验证码 → 等待5分钟或通过测试钩子删除 Redis `sms:code:<phone>` → 输入原验证码登录,提示“验证码错误或已过期”，仍停留登录页且无 token 写入,后端 CODE_TTL=300s；fast 不建议真实等待,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-014,一、基础登录与 WebView 容器,登录,验证码一次性使用,P1,Med,是,获取验证码并登录成功 → 退出登录 → 复用同一验证码再次登录,第二次提示验证码错误或已过期；不能再次进入登录态,`verifyCode` 成功后会删除短信 key,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-015,一、基础登录与 WebView 容器,登录,验证码发送限流与倒计时,P1,Med,是/接口辅助,验证码发送成功后立刻再次触发发送（前端或接口层）,前端按钮显示60s倒计时且不可点；绕过前端时后端1秒1次限流生效,避免污染真实短信频控,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-016,一、基础登录与 WebView 容器,登录态,冷静期账号登录跳转,P1,Med,是/预置账号,使用已进入 pending_deletion 的账号登录,登录后自动进入 /deletion-pending，不能直接进入 /chat,登录成功后前端会请求 /account/status,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-017,一、基础登录与 WebView 容器,登录态,token失效自动退出,P0,Med,是,手动写入过期/错误 `cx-token` → 打开 /chat 并触发任一需登录接口,收到401后清除 token/consents/needsProfile，本地状态清零并跳回 /login,覆盖 WebView 持久化 token 异常,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-018,一、基础登录与 WebView 容器,登录态,切账号缓存隔离,P0,Med,是,A账号产生会话/健康档案 → 登出 → B账号登录并打开侧边栏/健康档案,不出现 A 账号会话、消息、档案或授权缓存,auth slice 会重置 chat/medical store；GET 带 no-cache,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-019,一、基础登录与 WebView 容器,登录,验证码输入过滤,P1,Easy,是,在验证码输入框粘贴字母、中文、符号和超过6位数字,仅保留数字且最多6位；不因非法字符导致崩溃,"前端 `replace(/\D/g, """")`",,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-BASE-020,一、基础登录与 WebView 容器,WebView,深链未登录重定向,P0,Easy,是,清登录态后直接打开 /chat/:sessionId、/medical-records、/materials 等登录页外路由,统一重定向 /login；不会白屏或停留空壳页面,AuthGuard + BrowserRouter/Nginx fallback,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-001,二、首次个人信息完善 /profile,个人信息,首次登录跳转,P0,Easy,是,使用未完善资料账号登录,自动进入 /profile 页面,账号需 needsProfile=true,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-002,二、首次个人信息完善 /profile,个人信息,页面元素展示,P0,Easy,是,进入 /profile,展示昵称、出生日期、当前关注情况、性别、保存按钮,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-003,二、首次个人信息完善 /profile,个人信息,必填为空校验,P0,Easy,是,不填写任何字段 → 点击保存并进入对话,提示请完整填写昵称、出生日期、当前关注情况、性别,首次资料账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-004,二、首次个人信息完善 /profile,个人信息,昵称填写,P0,Easy,是,输入昵称,输入框正常显示输入内容,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-005,二、首次个人信息完善 /profile,个人信息,出生日期选择,P0,Med,是,点击出生日期 → 弹出日期选择器 → 点击确定,日期选择器正常打开并回填日期,DateWheelPicker,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-006,二、首次个人信息完善 /profile,个人信息,当前关注情况选择,P0,Easy,是,打开当前关注情况 → 选择一个选项,选项被选中并显示在页面上,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-007,二、首次个人信息完善 /profile,个人信息,性别选择,P0,Easy,是,点击女性或男性按钮,按钮选中态正确,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-008,二、首次个人信息完善 /profile,个人信息,完整保存,P0,Easy,是,填写全部必填项 → 点击保存并进入对话,保存成功，跳转 /chat,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-009,二、首次个人信息完善 /profile,个人信息,非首次可跳过,P1,Easy,是,使用非强制完善状态进入 /profile,显示“跳过，直接进入对话”,非 needsProfile 账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-010,二、首次个人信息完善 /profile,个人信息,跳过进入对话,P1,Easy,是,点击跳过,正常进入 /chat,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-011,二、首次个人信息完善 /profile,个人信息,编辑模式返回,P1,Easy,是,从侧边栏进入个人信息编辑页 → 点击返回/取消,返回对话页或侧边栏状态正确,/profile?mode=edit,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-012,二、首次个人信息完善 /profile,个人信息,编辑保存,P1,Easy,是,修改昵称或关注情况 → 保存,保存成功，回到对话页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-013,二、首次个人信息完善 /profile,个人信息,首次强制资料不可跳过,P0,Easy,是,新账号首次登录进入 /profile,页面不展示“跳过，直接进入对话”；必须完整填写后才能进入 /chat,`requireCompleteProfile && !isEditMode`,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-014,二、首次个人信息完善 /profile,个人信息,首次部分保存拦截,P0,Easy,是,首次资料账号仅填写当前关注情况或仅填写昵称后点击保存,提示缺失字段；不应进入 /chat,前端和后端均需校验完整资料,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-015,二、首次个人信息完善 /profile,个人信息,带 returnSessionId 返回,P1,Med,是,从某会话侧边栏进入个人信息 → 修改保存/取消,返回原 `/chat/:sessionId`，并按 `returnToSettings=1` 重新打开侧边栏,覆盖外部资料页变更事件路径,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-PROFILE-016,二、首次个人信息完善 /profile,个人信息,关注情况改变联动健康档案字段,P1,Med,是,编辑 currentConcern 从“乳腺肿瘤相关诊疗”切到“结节随访” → 进入健康档案,肿瘤分型/确诊时长/治疗阶段等扩展字段隐藏；基础字段仍显示,`resolveVisibleMedicalFields`,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-001,三、对话页基础功能 /chat,对话,对话页加载,P0,Easy,是,登录后进入 /chat,展示橙欣健康标题、欢迎语、输入框,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-002,三、对话页基础功能 /chat,对话,欢迎建议问题展示,P0,Easy,是,新对话页观察建议问题,展示建议问题按钮，如“化疗后恶心该怎么办”,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-003,三、对话页基础功能 /chat,对话,点击建议问题发送,P0,Med,是,点击一个建议问题,用户消息出现在对话中，开始生成回复,依赖对话接口,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-004,三、对话页基础功能 /chat,对话,文字输入发送,P0,Med,是,输入短问题 → 点击发送,用户消息出现，AI 回复区域开始输出,不判断答案质量,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-005,三、对话页基础功能 /chat,对话,Enter 发送,P1,Easy,是,输入文字 → 按 Enter,消息被发送,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-006,三、对话页基础功能 /chat,对话,Shift+Enter 换行,P1,Easy,是,输入文字 → Shift+Enter,输入框换行，不发送,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-007,三、对话页基础功能 /chat,对话,空消息不可发送,P0,Easy,是,输入框为空时观察按钮,不展示发送按钮或点击无效,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-008,三、对话页基础功能 /chat,对话,停止生成,P0,Med,是,发送问题 → 流式生成中点击停止,生成停止，页面显示已中断或停止态,需在流式过程中点击,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-009,三、对话页基础功能 /chat,对话,停止后重试,P1,Med,是,停止生成后点击重试,重新发起回答,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-010,三、对话页基础功能 /chat,对话,新对话,P0,Easy,是,点击右上角新对话按钮,清空当前消息，回到新对话欢迎态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-011,三、对话页基础功能 /chat,对话,消息复制,P1,Easy,是,回答生成后点击复制按钮,显示已复制或复制成功状态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-012,三、对话页基础功能 /chat,对话,点赞,P1,Easy,是,回答生成后点击有帮助,点赞按钮进入选中态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-013,三、对话页基础功能 /chat,对话,点踩,P1,Easy,是,回答生成后点击没帮助,点踩按钮进入选中态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-014,三、对话页基础功能 /chat,对话,分享至此,P1,Med,是,回答生成后点击分享按钮,复制分享链接或显示链接已复制,需要 sessionId,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-015,三、对话页基础功能 /chat,对话,内容免责声明,P1,Easy,是,查看 AI 回答底部,显示“内容由AI生成仅供参考...”,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-016,三、对话页基础功能 /chat,对话,长文本限制,P1,Easy,是,输入超过最大长度文本,显示字数警告，发送按钮不可用,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-017,三、对话页基础功能 /chat,对话,历史会话恢复,P1,Med,是,发送一轮对话 → 进入历史 → 打开该会话,历史消息正常加载,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-018,三、对话页基础功能 /chat,对话,删除历史会话,P1,Med,是,侧边栏删除某会话,会话从列表移除,会破坏测试数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-019,三、对话页基础功能 /chat,对话,对话不存在,P2,Med,是,打开不存在的 /chat/:sessionId,显示“对话不存在或无权访问”,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-020,三、对话页基础功能 /chat,对话,新对话切换不串流,P1,Med,是,会话A流式生成中点击新对话 → 在新对话发送消息B,A/B 消息和流式状态不串；回到A可看到A最终/中断结果,多会话 stream bucket/rekey 逻辑,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-023,三、对话页基础功能 /chat,对话,同步传输模式发送,P1,Med,是/预置Redis,预置 sync fallback 标记后发送问题,不展示逐字流式，但请求完成后出现用户消息和完整 AI 回复,覆盖 WebView 不支持稳定流式时的兜底,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-024,三、对话页基础功能 /chat,对话,仅图片消息发送,P1,Med,是,只选择图片不输入文字 → 点击发送,允许发送；用户气泡展示图片，AI 显示理解图片/生成状态,后端允许 content 空但 images 非空,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-025,三、对话页基础功能 /chat,对话,加载更早历史消息,P1,Med,是,进入超过30条消息的历史会话 → 上滑到顶部,加载更早消息且当前阅读位置不跳动,IntersectionObserver + scrollHeight 补偿,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-026,三、对话页基础功能 /chat,对话,删除当前会话后回新对话,P1,Med,是,侧边栏删除当前打开的会话并确认,会话从列表移除，主界面回到新对话欢迎态,会破坏测试数据，建议专用会话,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CHAT-029,三、对话页基础功能 /chat,对话,中断后编辑重试,P1,Med,是,发送问题 → 停止生成 → 编辑上一条用户消息并重试,旧 interrupted 回复被移除/替换，新问题重新生成,MessageBubble 编辑重试路径,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-001,四、输入框、图片、语音,输入框,默认状态,P0,Easy,是,进入对话页观察输入区,显示输入框、加号、语音按钮,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-002,四、输入框、图片、语音,输入框,输入后按钮变化,P0,Easy,是,输入文字,语音按钮切换为发送按钮,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-003,四、输入框、图片、语音,输入框,发送后清空,P0,Easy,是,输入文字并发送,输入框清空,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-004,四、输入框、图片、语音,输入框,图片选择入口,P0,Easy,是,点击加号按钮,触发 file input,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-005,四、输入框、图片、语音,输入框,上传图片预览,P0,Med,是,选择 JPG/PNG 图片,图片预览显示在输入框上方,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-006,四、输入框、图片、语音,输入框,删除图片预览,P0,Easy,是,上传图片后点击删除,图片预览被移除,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-007,四、输入框、图片、语音,输入框,图片消息发送,P1,Med,是,上传图片 → 点击发送,用户消息中显示图片,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-008,四、输入框、图片、语音,输入框,不支持格式,P0,Easy,是,选择 txt 或不支持图片格式,提示不支持的图片格式,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-009,四、输入框、图片、语音,输入框,单图大小限制,P1,Med,是,上传超过 10MB 图片,提示单张图片不能超过 10MB,需准备大文件,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-010,四、输入框、图片、语音,输入框,图片数量限制,P1,Med,是,连续选择超过 5 张图片,最多保留 5 张或提示限制,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-011,四、输入框、图片、语音,输入框,语音按钮存在,P1,Easy,是,进入对话页观察语音按钮,语音入口显示,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-012,四、输入框、图片、语音,输入框,WebView 不支持录音提示,P1,Med,是,在不支持录音环境点击语音,提示浏览器不支持录音功能,依赖设备能力,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-014,四、输入框、图片、语音,输入框,流式中按钮状态,P0,Med,是,AI 生成中观察输入区,显示停止生成按钮，语音按钮禁用,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-INPUT-016,四、输入框、图片、语音,输入框,粘贴图片上传,P1,Med,是/桌面WebView,在输入框粘贴剪贴板图片,图片进入预览列表；可删除或发送,移动端剪贴板能力依赖容器,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-001,五、侧边栏与导航,侧边栏,打开侧边栏,P0,Easy,是,在 /chat 点击左上角菜单,侧边栏打开，显示橙欣健康,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-002,五、侧边栏与导航,侧边栏,关闭侧边栏,P0,Easy,是,点击关闭或遮罩,侧边栏关闭,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-003,五、侧边栏与导航,侧边栏,进入个人信息,P0,Easy,是,打开侧边栏 → 点击个人信息,进入 /profile?mode=edit,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-004,五、侧边栏与导航,侧边栏,进入健康档案,P0,Easy,是,打开侧边栏 → 点击健康档案,进入 /medical-records,可能有授权弹窗,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-005,五、侧边栏与导航,侧边栏,进入我的材料,P1,Easy,是,打开侧边栏 → 点击我的材料,进入 /materials,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-006,五、侧边栏与导航,侧边栏,新对话,P0,Easy,是,侧边栏点击新对话,回到新对话页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-007,五、侧边栏与导航,侧边栏,历史列表展示,P1,Med,是,已有历史时打开侧边栏,显示历史会话列表,需有历史数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-008,五、侧边栏与导航,侧边栏,历史会话加载更多,P2,Med,是,历史较多时滚动到底,加载更多历史会话,需预置多条历史,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-009,五、侧边栏与导航,侧边栏,退出登录,P0,Easy,是,点击退出登录,回到登录页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-010,五、侧边栏与导航,侧边栏,进入阅读设置,P0,Easy,是,打开侧边栏 → 点击阅读设置,进入 /reading-settings 页面，展示字体大小三档,当前代码已有入口,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-011,五、侧边栏与导航,侧边栏,资料页返回侧栏中间态,P1,Med,是,从侧边栏进入个人信息/健康档案/阅读设置/材料 → 点击返回,回到原 chat 路径，侧边栏按 `openSidebar` 状态重新打开,覆盖 returnToSettings 路由参数,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-012,五、侧边栏与导航,侧边栏,素材上传台入口可见性,P2,Easy,是,分别在 localhost/dev/内网与正式域名打开侧边栏,仅 dev/localhost/内网显示“素材上传台”，正式域名不显示,`shouldShowMaterialsAdminEntry`,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-NAV-013,五、侧边栏与导航,侧边栏,删除会话二次确认,P1,Easy,是,点击某历史会话删除按钮,弹出确认框；取消不删除，确认才从列表移除,避免误删,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CONSENT-001,六、健康档案授权,健康授权,首次进入弹窗,P0,Easy,是,未授权账号点击健康档案,弹出“健康档案授权”,未授权账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CONSENT-002,六、健康档案授权,健康授权,同意授权,P0,Easy,是,点击同意,弹窗关闭，进入健康档案页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CONSENT-003,六、健康档案授权,健康授权,不同意授权,P1,Easy,是,点击不同意,返回聊天页或停留原页面，不进入健康档案,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CONSENT-004,六、健康档案授权,健康授权,已授权不再弹,P1,Easy,是,已授权账号再次进入健康档案,不再弹授权弹窗,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CONSENT-006,六、健康档案授权,健康授权,本地授权丢失远端同步,P1,Med,是,已授权账号清 localStorage 的 `cx-consents` 后进入健康档案,前端调用 `/auth/consents` 后识别远端授权，不重复弹窗,useHealthProfileConsent 远端兜底,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-CONSENT-007,六、健康档案授权,健康授权,拒绝授权不写健康数据,P1,Med,是/接口辅助,未授权账号进入健康档案弹窗 → 点击不同意 → 再查档案/文档,返回聊天页；不创建 medical_records/medical_documents,用于验证拒绝无副作用,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-001,七、健康档案页 /medical-records,健康档案,页面加载,P0,Easy,是,从侧边栏进入健康档案,展示健康档案标题、病历档案、病历文档,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-002,七、健康档案页 /medical-records,健康档案,返回对话,P0,Easy,是,点击返回,返回 /chat,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-003,七、健康档案页 /medical-records,病历档案,卡片展示,P0,Easy,是,进入健康档案页,展示病历档案卡片,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-004,七、健康档案页 /medical-records,病历档案,编辑入口,P0,Easy,是,点击病历档案“编辑”,展开编辑表单,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-005,七、健康档案页 /medical-records,病历档案,取消编辑,P0,Easy,是,进入编辑 → 点击取消,表单收起，回到只读/折叠状态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-006,七、健康档案页 /medical-records,病历档案,月经状态选择,P1,Easy,是,编辑 → 打开月经状态 → 选择选项,选项回填成功,女性账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-007,七、健康档案页 /medical-records,病历档案,肿瘤分型选择,P1,Easy,是,编辑 → 打开肿瘤分型 → 选择 HER2阳性,选项回填成功,关注情况需展示该字段,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-008,七、健康档案页 /medical-records,病历档案,确诊时长选择,P1,Easy,是,编辑 → 选择确诊时长,选项回填成功,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-009,七、健康档案页 /medical-records,病历档案,治疗阶段选择,P1,Easy,是,编辑 → 选择治疗阶段,选项回填成功,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-010,七、健康档案页 /medical-records,病历档案,用药情况选择,P0,Med,是,编辑 → 打开用药情况 → 选择一个药品 → 完成,已选药品显示在触发器中,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-011,七、健康档案页 /medical-records,病历档案,自定义用药,P0,Med,是,打开用药情况 → 输入自定义药名 → 添加 → 完成,自定义药名显示,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-012,七、健康档案页 /medical-records,病历档案,自定义用药 Emoji,P1,Med,是,输入包含 Emoji/特殊字符的药名,保存后展示不乱码,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-013,七、健康档案页 /medical-records,病历档案,自定义药名超长,P1,Easy,是,输入超过长度限制的药名,提示单个药品名称最多 30 个字,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-014,七、健康档案页 /medical-records,病历档案,暂未用药,P1,Easy,是,用药情况选择“暂未用药”,其他药品选择被清空,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-015,七、健康档案页 /medical-records,病历档案,不确定,P1,Easy,是,用药情况选择“不确定”,其他药品选择被清空,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-016,七、健康档案页 /medical-records,病历档案,用药时长选择,P1,Easy,是,编辑 → 选择用药时长,选项回填成功,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-017,七、健康档案页 /medical-records,病历档案,保存修改,P0,Easy,是,修改任一结构化字段 → 保存,保存成功，退出编辑态，新数据可见,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-018,七、健康档案页 /medical-records,病历档案,多字段保存,P1,Med,是,修改多个字段 → 保存,所有字段均保存成功,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-019,七、健康档案页 /medical-records,病历档案,男性隐藏月经状态,P1,Med,是,男性账号进入病历档案,不展示月经状态字段,男性账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-020,七、健康档案页 /medical-records,病历档案,不同关注情况字段变化,P1,Med,是,不同 currentConcern 账号进入,字段按规则展示,需多账号或造数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-021,七、健康档案页 /medical-records,病历档案,未保存返回提示,P1/P0,Med,视需求,编辑后不保存直接返回,若产品要求，应提示未保存；若当前无设计，则不纳入 P0,需产品确认,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-022,七、健康档案页 /medical-records,MVP限制,单档案限制,P1,Easy,是,进入健康档案页,仅展示一个病历档案卡片，无新增/切换档案入口,当前 MVP 设计,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-023,七、健康档案页 /medical-records,清空后档案,清空后健康档案空态,P1,Med,是，专用账号,专用账号已有结构化档案和病历文档 → 账号安全确认清空 → 进入健康档案,病历档案显示“尚未填写病历信息”，病历文档为空态,覆盖已有档案删除,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-024,七、健康档案页 /medical-records,清空后档案,删除后重建结构化档案,P1,Med,是，专用账号,执行清空健康档案后 → 进入健康档案 → 编辑病历档案并保存用药/治疗阶段等字段,保存成功，重新生成 medical_records；刷新后新字段仍存在,用户重点场景：已有档案删除再重建,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-025,七、健康档案页 /medical-records,清空后档案,删除后重新上传文档,P1,Hard,是，慢/专用账号,清空后进入病历上传 → 上传有效病历图片 → OCR 成功确认,新病历文档出现在列表，旧文档不恢复,依赖 OCR/OSS,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-026,七、健康档案页 /medical-records,清空后档案,清空不影响个人信息授权对话,P1,Med,是,清空健康档案后查看个人信息、健康授权、对话历史,昵称/生日/性别/currentConcern 保留；健康授权不重复弹；对话历史仍可打开,`purgeMedicalData` 只删 medical_records/documents/OSS,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-027,七、健康档案页 /medical-records,清空后档案,旧文档详情不可再访问,P1,Med,是/接口辅助,记录清空前文档详情页/接口ID → 清空后再次打开旧文档,页面无法展示旧文档，接口返回文档不存在或列表无该项,验证删除彻底性,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-028,七、健康档案页 /medical-records,病历档案,非法字段后端拒绝,P2,Med,接口自动化,男性账号或非肿瘤关注账号通过接口提交 menstrualStatus/tumorType 等不可见字段,后端返回“当前关注情况不允许更新字段”或非法字段错误,前端隐藏不等于后端信任,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-029,七、健康档案页 /medical-records,病历档案,关注情况切换隐藏旧扩展字段,P1,Med,是,肿瘤关注账号先保存 tumorType 等 → 切 currentConcern 为结节随访 → 回健康档案,扩展字段在 UI 隐藏；基础字段和用药仍可编辑保存,旧 JSON 数据可存在但不可见/不可再更新,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-030,七、健康档案页 /medical-records,病历档案,自定义用药分隔去重,P1,Med,是,输入“药A，药A、药B；药B。”并添加/保存,最终仅展示“药A、药B”，末尾标点被清理,splitMedicationCustom/joinMedicationCustom,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-031,七、健康档案页 /medical-records,病历档案,未点添加的自定义药随保存提交,P1,Med,是,用药下拉中输入自定义药名但不点添加 → 直接点档案保存,该自定义药仍被提交并显示,handleSave 合并 pendingCustomNames,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-033,七、健康档案页 /medical-records,病历档案,折叠/取消丢弃未保存变更,P1,Easy,是,进入编辑修改字段 → 点击取消或折叠箭头,恢复 initialData，未保存内容不出现在摘要,当前实现编辑中点折叠会调用 cancel,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MED-034,七、健康档案页 /medical-records,病历档案,未授权直接保存403,P2,Med,接口自动化,未 health_profile 授权账号绕过UI直接 POST /medical,后端返回403“需要先完成健康档案授权”,验证服务端授权边界,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-001,八、病历文档上传 / OCR,病历上传,进入上传页,P0,Easy,是,健康档案页点击右上角 + 或上传第一份病历,进入上传病历图片页面,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-002,八、病历文档上传 / OCR,病历上传,上传页元素,P0,Easy,是,进入上传页,展示拍照、从相册选择、取消,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-003,八、病历文档上传 / OCR,病历上传,取消上传,P0,Easy,是,点击取消,返回健康档案列表页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-004,八、病历文档上传 / OCR,病历上传,选择图片预览,P0,Med,是,设置 JPG/PNG 文件到 file input,图片预览出现,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-005,八、病历文档上传 / OCR,病历上传,删除图片,P1,Easy,是,上传图片后点击删除,图片预览消失,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-006,八、病历文档上传 / OCR,病历上传,开始识别按钮,P0,Easy,是,上传图片后观察页面,显示“开始识别（1张）”,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-007,八、病历文档上传 / OCR,病历上传,不支持格式,P0,Easy,是,上传 txt/HEIC/TIFF 等不支持格式,提示不支持图片格式，请转 JPG/PNG,fast 推荐,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-008,八、病历文档上传 / OCR,病历上传,单张超过 10MB,P1,Med,是,上传超大图片,提示单张图片不能超过 10MB,需准备大图片,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-009,八、病历文档上传 / OCR,病历上传,最多 10 张,P1,Med,是,上传超过 10 张图片,提示最多上传 10 张，仅保留前 N 张,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-010,八、病历文档上传 / OCR,OCR识别,正常病历识别,P1,Hard,是，慢,上传有效病历图片 → 开始识别,显示识别中，最终识别完成,依赖 OCR/AI 后端,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-011,八、病历文档上传 / OCR,OCR识别,识别后生成文档,P1,Hard,是，慢,OCR 成功后确认,返回列表，新增病历文档,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-012,八、病历文档上传 / OCR,OCR识别,非健康图片,P2,Hard,是，慢,上传非健康相关图片 → 开始识别,失败或提示无法识别健康信息,不建议放 fast,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-014,八、病历文档上传 / OCR,病历文档,查看详情,P1,Med,是,有文档时点击文档卡片,进入详情页，展示标题、日期、图片,需有文档,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-015,八、病历文档上传 / OCR,病历文档,图片预览,P1,Med,是,详情页点击病历图片,打开大图预览,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-016,八、病历文档上传 / OCR,病历文档,删除文档,P1,Med,是，测试账号,详情页点击删除,确认后文档从列表消失,会破坏数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-020,八、病历文档上传 / OCR,OCR识别,成功后自动填充档案字段,P1,Hard,是，慢,上传可识别病历 → OCR 成功 → 返回健康档案,可识别字段回填到病历档案卡，用户核对后可保存/继续编辑,onFieldsExtracted 更新 medicalProfileData,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-022,八、病历文档上传 / OCR,病历文档,删除文档二次确认取消,P1,Easy,是,文档列表或详情点击删除 → 系统确认框点取消,文档仍在列表，详情仍可打开,浏览器 confirm,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-023,八、病历文档上传 / OCR,病历文档,删除后刷新持久消失,P1,Med,是，测试账号,删除某文档并确认 → 刷新或重新进入健康档案,该文档仍不存在，列表数量减少,会破坏测试数据,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-OCR-024,八、病历文档上传 / OCR,病历文档,详情大图关闭与切换,P1,Med,是,详情页点击图片打开大图 → 切换/关闭,大图层正常展示对应图片，关闭后回到详情页,ImageLightbox,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-001,九、我的材料 /materials,我的材料,页面进入,P1,Easy,是,侧边栏点击我的材料,进入 /materials,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-002,九、我的材料 /materials,我的材料,沟通卡空状态,P1,Easy,是,无沟通卡账号进入“我的材料”且停留“我的沟通卡”Tab,显示“暂无已保存的沟通卡”及说明文案,空材料账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-003,九、我的材料 /materials,我的材料,列表展示,P1,Med,是,有沟通卡片账号进入,展示卡片日期、标题、预览,需预置材料,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-004,九、我的材料 /materials,我的材料,查看详情,P1,Med,是,点击沟通卡片,进入详情页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-005,九、我的材料 /materials,我的材料,编辑卡片,P1,Med,是,详情页点击编辑卡片,卡片内容进入可编辑状态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-006,九、我的材料 /materials,我的材料,保存修改,P1,Med,是,修改字段 → 保存修改,保存成功，内容更新,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-007,九、我的材料 /materials,我的材料,取消编辑,P1,Easy,是,编辑中点击取消,退出编辑，恢复原内容,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-008,九、我的材料 /materials,我的材料,返回列表,P1,Easy,是,详情页点击返回列表,回到材料列表,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-009,九、我的材料 /materials,我的材料,返回聊天,P1,Easy,是,列表页点击返回,回到聊天页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-010,九、我的材料 /materials,我的材料,Tab切换,P1,Easy,是,进入 /materials → 在“我的沟通卡”和“我的跟练卡”之间切换,选中态正确，列表/空态随 Tab 切换,当前实现双 Tab,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-011,九、我的材料 /materials,我的材料,跟练卡空状态,P1,Easy,是,无已保存跟练卡账号进入“我的跟练卡”,显示“暂无已保存的跟练卡”及说明文案,空材料账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-012,九、我的材料 /materials,我的材料,跟练卡列表展示,P1,Med,是,预置已保存跟练方案账号进入“我的跟练卡”,展示保存日期、方案名、副作用/场景、进度和跟练时长,需预置 intervention engagement,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-013,九、我的材料 /materials,我的材料,跟练卡详情,P1,Med,是,点击一张跟练卡,进入详情并展示干预方案 Inline 卡片，可继续跟练/查看步骤,依赖素材详情可用,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-016,九、我的材料 /materials,我的材料,沟通卡编辑取消恢复,P1,Easy,是,详情页点击编辑 → 修改字段 → 点击取消,退出编辑，恢复原始卡片内容,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-MAT-017,九、我的材料 /materials,我的材料,返回原会话并打开侧栏,P1,Med,是,从某会话侧边栏进入我的材料 → 进入详情再返回列表 → 点击返回,回到原 `/chat/:sessionId` 并重新打开侧边栏,returnSessionId + returnToSettings,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-001,十、账号与安全,账号安全,页面进入,P1,Easy,是,个人信息编辑页 → 点击账号与安全,进入账号与安全页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-002,十、账号与安全,账号安全,返回个人信息,P1,Easy,是,账号与安全页点击返回,回到个人信息页,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-003,十、账号与安全,清空档案,打开清空弹窗,P1,Easy,是,点击清空健康档案,弹出二次确认弹窗,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-004,十、账号与安全,清空档案,取消清空,P1,Easy,是,弹窗点击取消,弹窗关闭，数据不变,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-005,十、账号与安全,清空档案,确认清空,P2,Med,是，测试账号,专用账号点击确认清空,健康档案/病历文档被清空,破坏性操作,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-006,十、账号与安全,注销账号,打开注销流程,P2,Easy,是,点击注销账号,打开注销账号向导,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-007,十、账号与安全,注销账号,取消注销,P2,Easy,是,注销流程点击取消,流程关闭，账号仍可用,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-009,十、账号与安全,清空档案,发送清空验证码与倒计时,P1,Med,是,打开清空健康档案 → 点击“我已了解，继续”,进入短信验证页，自动发送验证码；重新发送按钮显示60s倒计时,后端 /account/medical/send-code,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-010,十、账号与安全,清空档案,验证码为空拦截,P1,Easy,是,进入清空验证页不输入验证码,确认清除按钮禁用或提示“请输入验证码”,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-011,十、账号与安全,清空档案,错误验证码,P1,Med,是,输入错误验证码 → 确认清除,提示“验证码错误或已过期”，不清空档案,专用账号,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-012,十、账号与安全,清空档案,验证码超时,P1,Med,是/需测试钩子,发送清空验证码 → 等待5分钟或删除 Redis code → 输入原验证码,提示验证码错误或已过期；档案仍保留,覆盖用户提到的验证码超时,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-013,十、账号与安全,清空档案,验证码一次性,P1,Med,接口自动化,验证码清空成功后再次复用同验证码调用清空/注销接口,第二次验证码校验失败,verifyCode 成功后 del key,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-014,十、账号与安全,清空档案,清空成功确认页,P1,Med,是，专用账号,正确验证码确认清空 → 成功页点击“知道了”,弹窗关闭并返回 /profile?mode=edit；再次进入健康档案为空态,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-015,十、账号与安全,注销账号,风险阅读倒计时,P2,Easy,是,打开注销账号弹窗,继续按钮在10s倒计时结束前不可点，结束后变为“我已阅读，继续”,代码当前为10s；注释写30s，需产品确认,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-016,十、账号与安全,注销账号,确认短语校验,P2,Easy,是,倒计时后进入短语页，输入非“确认注销”内容,下一步不可点；输入完全匹配后才可进入短信验证,trim 后匹配,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-017,十、账号与安全,注销账号,注销短信重发倒计时,P2,Med,是,进入注销短信验证页,自动发送验证码，重新发送60s内不可点,后端 /account/deletion/send-code,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-018,十、账号与安全,注销账号,注销验证码错误/超时,P2,Med,是/专用账号,输入错误或过期验证码确认注销,提示错误，不进入冷静期，账号仍 active,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-019,十、账号与安全,注销冷静期,业务页面拦截,P1,Med,是/专用账号,账号进入 pending_deletion 后访问 /chat、/medical-records、/materials,业务接口返回403并自动跳 /deletion-pending,requireActiveAccount + api.ts,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-020,十、账号与安全,注销冷静期,撤销注销恢复,P1,Med,是/专用账号,冷静期页面点击“撤销注销”,恢复 active 并跳 /chat；后续业务接口可正常访问,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-021,十、账号与安全,注销冷静期,冷静期退出再登录,P1,Med,是/专用账号,pending_deletion 页面点击退出登录 → 用原手机号重新登录,再次进入 /deletion-pending，可选择撤销,登录后检查 /account/status,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-SEC-022,十、账号与安全,注销账号,完成页退出登录,P2,Med,是/专用账号,注销确认成功进入 done 页 → 点击“我知道了”,清本地登录态并返回 /login,强破坏性流程,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-COMPAT-001,十一、WebView 容器兼容性,WebView兼容,首屏高度与白屏兜底,P0,Easy,是,在目标 Android WebView 启动登录页/对话页,页面使用完整可视高度，无0高度白屏、无底部异常空白,`--app-height` 100vh/100dvh 兜底,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-COMPAT-002,十一、WebView 容器兼容性,WebView兼容,软键盘不遮挡输入框,P0,Med,是,进入 /chat 聚焦输入框唤起软键盘 → 输入多行文字,InputBar 跟随键盘上浮；发送按钮可见可点；消息区可滚动,visualViewport 写入 --keyboard-offset,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-WV-COMPAT-004,十一、WebView 容器兼容性,WebView兼容,深链刷新/重进,P0,Med,是,登录态下直接打开或刷新 /chat/:sessionId、/profile?mode=edit、/medical-records,前端路由可恢复；后端静态资源 fallback 正常；无404白屏,BrowserRouter 需服务端 fallback,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-READ-001,十二、阅读设置 /reading-settings,阅读设置,页面进入,P0,Easy,是,侧边栏点击阅读设置,进入 /reading-settings，展示“小/中/大”三档卡片,,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-READ-002,十二、阅读设置 /reading-settings,阅读设置,三档切换选中态,P0,Easy,是,依次点击小/中/大字体,对应卡片显示选中态，其他卡片取消选中,aria-pressed 可辅助断言,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-READ-003,十二、阅读设置 /reading-settings,阅读设置,字号持久化,P1,Easy,是,选择“大” → 重启 App/WebView 或刷新页面,仍保持“大”选中态,localStorage `cx-settings`,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-READ-004,十二、阅读设置 /reading-settings,阅读设置,聊天与材料字号生效,P1,Med,是,切换字号后返回聊天/材料详情,消息正文、卡片标题/预览字号随 `--font-size-chat` 改变,视觉断言或 computed style,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+现有用例-可自动化,CX-READ-005,十二、阅读设置 /reading-settings,阅读设置,返回原会话侧栏,P1,Easy,是,从某会话侧边栏进入阅读设置 → 点击返回,回到原会话并重新打开侧边栏,returnSessionId + openSidebar,,沿用现有 testcases 定义；适合作为基础/原子自动化回归
+新增建议-完整业务闭环,CX-BIZ-AUTH-001,一、登录与首次激活闭环,登录/个人信息/Chat,新用户首登到首轮对话,P0,Med,UI E2E + 动态账号,使用新手机号登录 → 勾选用户协议/隐私政策 → 跳转个人信息必填页 → 验证未填必填项不能保存 → 填昵称/生日/性别/当前关注 → 保存 → 进入 /chat → 展示首次激活欢迎语 → 发送一句普通问题。,登录协议 consent 写入；个人信息落库；localStorage profile 标记清除；首次欢迎语出现；普通对话可正常生成回答并产生会话标题。,可复用 TEST_PHONE_NEEDS_PROFILE_AUTO_INCREMENT；避免使用已有资料账号。,"Login.tsx, Profile.tsx, Chat.tsx, /api/auth/send-code, /api/auth/login, /api/medical/profile, first-activation",现有覆盖登录/资料分散流程；建议新增闭环串联用例
+新增建议-完整业务闭环,CX-BIZ-CHAT-001,二、对话主链路闭环,Chat/Session/Feedback/Share,发送消息到历史恢复、反馈和分享,P0,Med,UI E2E + API 清理,新建对话 → 发送短问题 → 等待 thinking/process/answer 完成 → 校验免责声明/复制按钮 → 点有帮助/没帮助 → 分享至此 → 打开分享链接 → 回到 App 打开侧栏历史 → 重新进入该会话 → 删除测试会话。,用户消息、AI消息、process timeline、feedback、share token、历史列表与分享页均正常；删除后历史不再展示。,真实 LLM 成本可控；建议消息要求“只回复一句固定话”。,"Chat.tsx, useSSE.ts, sessions.ts, feedback.ts, share.ts, SharedView.tsx",现有多条原子用例已覆盖；建议保留一条 P0 闭环冒烟
+新增建议-完整业务闭环,CX-BIZ-CHAT-002,二、对话主链路闭环,Chat,中断、重试、编辑后重试,P1,Med,UI E2E,发送要求长回答的问题 → 停止生成 → 验证已中断 chip 和重试入口 → 点击重试 → 再次中断 → 编辑用户问题并保存重试。,中断消息被标记 interrupted；未配对 tool call 不影响下一轮；重试/编辑重试能重新生成，用户新文本可见。,可复用现有 CX-CHAT-008/009/010 类能力，建议闭环合并跑一次。,"Chat.tsx, agent loop interrupted handling, routes/chat.ts persist trimming",已有原子覆盖；闭环用例建议加入 extended-fast
+新增建议-完整业务闭环,CX-BIZ-COMM-001,三、医患沟通卡片闭环,Chat/CommunicationCard/Materials,聊天内生成沟通卡并保存到我的材料,P0,Hard,LLM UI E2E + API 校验,新建对话 → 发送“帮我整理一张下周复诊给医生看的沟通卡，重点是腹泻和用药调整” → 等待 generate_communication_card 工具卡片出现 → 断言卡片含就诊目标/我的情况/特别说明/我的问题 → 点击“保存到我的材料” → 点击“查看材料”或进入 /materials → 打开该卡详情。,聊天内出现沟通卡草稿；保存按钮调用 /medical/communication-cards；保存后按钮变“已保存到我的材料”；材料列表出现同标题卡；详情字段与聊天草稿一致。,核心新增闭环；需要真实 LLM 或在测试环境提供固定工具输出 hook。,"generate-communication-card.ts, CommunicationCardInline.tsx, communication-card.ts, Materials.tsx, /api/medical/communication-cards",现有仅覆盖已保存卡管理，未覆盖聊天生成+保存闭环
+新增建议-完整业务闭环,CX-BIZ-COMM-002,三、医患沟通卡片闭环,Chat/CommunicationCard,仅表达复诊意图时先询问再生成,P1,Hard,LLM E2E / 可测试钩子辅助,发送“我下周复诊，不知道要问医生什么” → 观察 AI 先询问是否需要整理沟通卡，不直接出卡 → 回复“需要，帮我整理” → 再等待沟通卡出现。,未获明确同意前不调用 generate_communication_card；用户同意后才生成沟通卡。,模型稳定性依赖 prompt；适合非每日 smoke，或用 test route 校验工具调用事件。,"generate-communication-card tool description, agent loop tool call policy",新增建议
+新增建议-完整业务闭环,CX-BIZ-COMM-003,三、医患沟通卡片闭环,CommunicationCard,同一工具结果重复保存幂等,P1,Med,UI E2E + API 校验（WeChat_H5_POC 已接入）,构造同一 sourceSessionId + sourceToolCallId 的沟通卡保存请求 → 连续保存两次 → 进入我的材料打开该卡。,两次保存返回同一 cardId；沟通卡列表中该标题只出现一条；材料详情展示完整字段；不会重复创建沟通卡。,可直接通过 API 传相同 sourceToolCallId 验证，再用 UI 验证状态同步。,"findCommunicationCardBySource, /medical/communication-cards/lookup, CommunicationCardInline",WeChat_H5_POC 已实现：CX-BIZ-COMM-003；覆盖 /medical/communication-cards 按来源幂等与材料页展示。
+新增建议-完整业务闭环,CX-BIZ-COMM-004,三、医患沟通卡片闭环,Materials/CommunicationCard,已保存沟通卡编辑后返回原会话并注入增量事件,P1,Med,UI E2E + API 校验（WeChat_H5_POC 已接入）,进入我的材料/我的沟通卡 → 打开已保存沟通卡（无数据时先通过聊天生成并保存）→ 点击“编辑卡片” → 修改标题、日期、就诊目标、我的情况、特别说明、我的问题 → 点击“保存修改” → 返回/刷新材料页后再次打开该卡。,编辑态展示标题、日期和四个详情输入框；保存后退出编辑态；详情页展示修改后的内容；/api/medical/communication-cards/:id 返回的新 draft 与 UI 修改一致；刷新后仍可看到修改内容。,UI 可断言返回；事件可用 /api/chat/debug/:sessionId 或 Redis 测试钩子断言。,"Materials.tsx, routes/medical.ts communication_card_updated, session-events.ts",WeChat_H5_POC 已实现：src/specs/12-business-llm-smoke.spec.ts → CX-BIZ-COMM-004；覆盖沟通卡详细字段编辑、保存、API 与刷新后 UI 持久化。
+新增建议-完整业务闭环,CX-BIZ-COMM-005,三、医患沟通卡片闭环,Chat/read_medical_documents,读取已保存沟通卡并展示引用 chip,P1,Hard,LLM E2E + API seed,"预置一张沟通卡 → 新会话发送“请查看我保存的最新复诊沟通卡并总结要点” → 等待模型调用 read_medical_documents({ids:[""c-1""]}) → 查看 assistant 上方沟通卡引用 chip → 点击 chip。",工具读取 c-* 卡片 markdown；前端收到 communication_card_attached；展示“沟通卡 #c-1”chip；点击打开卡片弹窗。,可用 API seed + debug/event 断言工具调用；真实 LLM 存在不确定性。,"read-medical-docs.ts, loop.ts COMMUNICATION_CARD_ATTACHED, CommunicationCardReferenceChip.tsx",新增建议
+新增建议-完整业务闭环,CX-BIZ-COMM-006,三、医患沟通卡片闭环,Chat/CommunicationCard,重复用户消息不重复展示沟通卡,P2,Hard,LLM E2E / Hook 断言,用户请求生成沟通卡并成功展示 → 立刻重复发送完全相同消息。,avoid_duplicate_card_on_repeated_user_message hook 拦截同类卡片重复展示；AI 换文字角度回应并询问是否不满意。,适合在 agent harness/test route 做断言。,"agent/hooks/builtin.ts, loop.ts single turn visible card idempotency",新增建议
+新增建议-完整业务闭环,CX-BIZ-INT-001,四、干预跟练卡闭环,Chat/InterventionMaterial/Materials,聊天触发干预方案并保存到我的材料,P0,Hard,LLM UI E2E + API 校验,发送轻症场景，如“刚吐完，嘴里发酸，喉咙不舒服，没有喝不进水/脱水/持续呕吐” → 等待 show_intervention_material 卡片 → 断言总览图、总时长、开始前确认、安全提示 → 点击“保存到我的材料” → 进入我的材料/我的跟练卡。,干预方案卡正常展示；保存产生 engagement；按钮变已保存；我的跟练卡列表出现保存日期、方案名、进度、跟练时长。,需素材库已有匹配 code；可 API/mock 工具输出降低 LLM 不确定性。,"show-intervention-material.ts, InterventionMaterialInline.tsx, intervention-material-runtime.ts, Materials.tsx",现有只覆盖材料页已保存跟练卡，未覆盖聊天触发+保存
+新增建议-完整业务闭环,CX-BIZ-INT-002,四、干预跟练卡闭环,InterventionMaterial,开始跟练、步骤控制与进度持久化,P1,Med,UI E2E + API 校验（WeChat_H5_POC 已接入）,进入我的材料/我的跟练卡 → 打开已保存跟练卡（无数据或素材失效时先通过聊天生成并保存）→ 点击“开始跟练/继续跟练/再跟练一次” → 验证步骤页 → 操作“下一步”“上一步”“重播本步”“返回总览” → 刷新/重进材料页。,跟练卡可进入步骤跟练态；步骤页展示“步骤 X / N”和控制按钮；下一步后进度增加，上一步/重播/返回总览可用；/api/intervention-material-runtime/saved 记录 followStartedAt、completedStepCount、totalStepCount；重进详情后进度仍保留。,可用缩短版测试素材 durationSec=1。,"InterventionMaterialInline, /intervention-material-runtime/interactions, intervention_material_engagements",WeChat_H5_POC 已实现：src/specs/12-business-llm-smoke.spec.ts → CX-BIZ-INT-002；覆盖跟练开始、步骤控制、API 与重进详情进度持久化。
+新增建议-完整业务闭环,CX-BIZ-INT-003,四、干预跟练卡闭环,InterventionMaterial,完成跟练后再跟练一次,P1,Med,UI E2E + API seed,使用短步骤素材完整走完所有步骤 → 进入 completed 状态 → 断言“已完成本轮跟练，可按需要再来一遍” → 点击“再跟练一次”。,completed 状态正确；再次开始从第 1 步重置；完成时间和总跟练时长更新。,建议专用测试素材，避免等待过久。,"InterventionMaterialInline finishFollow, engagement followCompletedAt",新增建议
+新增建议-完整业务闭环,CX-BIZ-INT-004,四、干预跟练卡闭环,Chat/InterventionMaterial,红旗/急症场景禁止展示干预卡,P1,Hard,LLM E2E / agent harness,发送包含红旗信息的副作用问题，如持续呕吐、喝不进水、明显脱水或呼吸困难。,不调用 show_intervention_material；AI 优先给出停止居家跟练、联系医生/急诊等安全建议。,适合 agent one-shot 断言无工具调用。,"static prompt Medical Path, show_intervention_material tool policy",新增建议
+新增建议-完整业务闭环,CX-BIZ-REPORT-001,五、聊天报告图片解读与保存闭环,Chat/MedicalReport/MedicalRecords,报告图片解读后保存到健康档案,P0,Hard,UI E2E + 图片夹具 + API 轮询,在聊天上传一张报告类医疗图片并发送“帮我解读” → 等待 medical_report_consultation_board 卡片/解析完成 → 出现“要保存这次图片吗？” → 点击保存 → 若未授权先同意健康档案授权 → 轮询保存任务或进入健康档案文档列表。,报告图片先走病历解读协会；展示保存建议；保存任务创建/完成；健康档案新增病历文档，详情可看原图。,需稳定报告图片夹具；LLM/视觉模型成本高，可夜间或专项跑。,"medical-report-consultation-board.ts, MedicalReportConsultationInline, MedicalDocumentSaveSuggestionCard, save-from-chat-image, MedicalRecords",现有 OCR/聊天图片上传分散覆盖，未覆盖报告解读+保存闭环
+新增建议-完整业务闭环,CX-BIZ-REPORT-002,五、聊天报告图片解读与保存闭环,Chat/MedicalReport,报告图片保存暂不保存,P1,Med,UI E2E,报告图片解读成功后，在保存建议卡点击“暂不保存”。,保存建议卡消失；不调用 save-from-chat-image；健康档案文档数量不变；当前回答不受影响。,可用网络拦截或 API 查询文档数量。,"MedicalDocumentSaveSuggestionCard dismiss, stores chat suggestions",新增建议
+新增建议-完整业务闭环,CX-BIZ-REPORT-003,五、聊天报告图片解读与保存闭环,Chat/MedicalRecords,同一聊天图片保存任务去重,P1,Med,API 自动化 + UI 辅助,对同一 sessionId/sourceMessageId/documentHash 连续调用 save-from-chat-image 两次，或 UI 重复点击保存。,第二次返回已存在/409 或复用任务；不会生成重复 medical_documents。,可直接接口自动化；需已存在本轮真实用户图片消息。,"medical-document-save-job.ts, /medical/documents/save-from-chat-image",已有 CX-OCR-026 未实现；建议列入自动化
+新增建议-完整业务闭环,CX-BIZ-PROFILE-001,六、AI 档案更新审批闭环,Chat/ApprovalCard/MedicalRecords,医疗字段审批同意后落库并在档案页可见,P0,Hard,LLM UI E2E + 健康授权账号,在聊天中明确说“我现在正在服用来曲唑，已经用了3个月” → 等待 update_structured_profile 产生确认卡片 → 如需授权先同意健康档案授权 → 在卡片点击同意 → 进入健康档案查看用药和时长。,审批卡展示当前值/更新为；同意后调用 /medical/profile/patch；档案字段落库；下一轮不会重复要求同一更新。,可用 mock/tool-test hook 稳定生成 approval；真实 LLM 适合专项。,"update-structured-profile.ts, ApprovalCard.tsx, /medical/profile/patch, MedicalProfileCard",现有健康档案编辑覆盖，未覆盖 AI 审批卡完整闭环
+新增建议-完整业务闭环,CX-BIZ-PROFILE-002,六、AI 档案更新审批闭环,Chat/ApprovalCard,审批拒绝后不落库且本会话不重复尝试,P1,Hard,LLM E2E / agent harness,触发一个医疗字段审批卡 → 点击拒绝 → 再发送“刚才那个信息先不要更新”。,调用 /medical/profile/reject；审批卡消失；档案未更新；session-events 记录 rejected field；后续同会话不再重复发该字段确认卡。,建议通过工具/harness 确保审批卡可控。,"ApprovalCard, /medical/profile/reject, session-events rejectedFields",新增建议
+新增建议-完整业务闭环,CX-BIZ-PROFILE-003,六、AI 档案更新审批闭环,Chat/Profile,个人信息字段自动更新通知,P1,Med,LLM E2E / API harness,用户在聊天中说“以后叫我小橙”或更正生日等 personal 字段 → 等待 profile_auto_updated 通知 → 进入个人信息页。,personal 字段不走审批卡，直接落库；前端展示自动更新通知；个人信息页显示新值。,适合用 test hook 触发 update_structured_profile personal 字段。,"executor update_structured_profile personal path, ProfileUpdateNotice, /medical/profile",新增建议
+新增建议-完整业务闭环,CX-BIZ-PROFILE-004,六、AI 档案更新审批闭环,ApprovalCard,用药多药品时长编辑并保存,P1,Med,UI E2E + API harness,触发 medications 审批卡，含多个药品和默认/覆盖时长 → 在审批卡修改某药品时长 → 点击同意 → 打开健康档案。,审批卡 select 可编辑；profilePatch 保存 medicationDurations；健康档案展示每个药品对应时长。,可通过直接向前端 store 注入 approval 或后端 test endpoint 生成。,"ApprovalCard medication editor, profile-validation, MedicalProfileCard medication display",新增建议
+新增建议-完整业务闭环,CX-BIZ-OCR-001,七、健康档案 OCR 与文档闭环,MedicalRecords/OCR,上传病历图片、OCR、自动填充、保存档案,P0,Hard,UI E2E + 图片夹具,进入健康档案 → 上传病历 → 选择报告图片 → 开始识别 → 识别完成确认 → 回到列表 → 查看新增文档 → 核对病历档案中可识别字段 → 保存档案。,OCR 成功生成 medical_documents；文档列表/详情可见；提取字段回填 MedicalProfileCard；保存后刷新仍存在。,已有 OCR 原子用例较多；建议一条完整闭环用稳定夹具跑。,"MedicalOcr.tsx, /medical/ocr, ocr.ts, MedicalRecords.tsx, MedicalProfileCard",现有多条 OCR 未实现/原子覆盖，缺完整闭环
+新增建议-完整业务闭环,CX-BIZ-OCR-002,七、健康档案 OCR 与文档闭环,MedicalRecords,删除文档后刷新和旧详情不可访问,P1,Med,UI E2E + API 校验（WeChat_H5_POC 已接入，专用账号条件执行）,使用专用清档/文档账号 → 进入健康档案 → 打开已有病历文档详情 → 确认删除 → 刷新页面并查询 API。,文档从列表消失；/api/medical/documents 不再返回该 docId；/api/medical/documents/:id 旧详情不可访问；刷新后 UI 不再展示旧标题。,可复用专用账号，避免删除真实数据。,"MedicalRecords handleDelete, /medical/documents/:id DELETE/GET",WeChat_H5_POC 已实现：CX-BIZ-OCR-002；未配置专用账号或无文档时自动 skipped，避免误删普通账号数据。
+新增建议-完整业务闭环,CX-BIZ-OCR-003,七、健康档案 OCR 与文档闭环,Chat/read_medical_documents,历史病历文档读取并展示引用 chip,P1,Hard,LLM E2E + API seed,预置病历文档 → 在聊天问“请结合我最近上传的病理报告解释一下” → 等待 read_medical_documents 读取 d-1 → assistant 上方显示已查阅文档 chip → 点击 chip 打开图片。,工具读取历史病历原图；合成 user 消息持久化；前端 document_attached 展示引用；回答结合文档但不越权诊断。,可在 agent/debug 断言工具调用；真实 LLM 专项。,"read-medical-docs.ts, loop synthetic user message, MessageList ReferenceChip",新增建议
+新增建议-完整业务闭环,CX-BIZ-MATERIALS-001,八、我的材料聚合闭环,Materials,沟通卡和跟练卡双 Tab 管理,P1,Med,UI E2E + API seed,同一账号预置沟通卡和跟练卡 → 进入我的材料 → 在两个 Tab 间切换 → 分别进入详情 → 编辑沟通卡/继续跟练卡 → 返回列表 → 返回原会话。,两个材料类型互不干扰；返回列表/返回聊天/returnSessionId 逻辑正确；保存进度和沟通卡编辑均持久化。,现有 MAT 用例可组合成一个闭环。,"Materials.tsx, communication-card service, intervention-material-engagement service",现有多个原子用例，建议增加组合闭环
+新增建议-完整业务闭环,CX-BIZ-SEC-001,九、账号与安全闭环,AccountSecurity/MedicalRecords,清空健康档案后重建,P1,Hard,UI E2E + 专用账号,专用账号准备结构化档案和病历文档 → 个人信息页进入账号与安全 → 清空健康档案 → 短信验证确认 → 进入健康档案确认空态 → 重新编辑档案并上传新文档。,medical_records/documents/OSS 病历图片清除；账号/个人信息/对话历史保留；可重新创建档案和文档。,破坏性，必须专用账号；固定验证码环境适合自动化。,"AccountSecurity, ClearMedicalDataDialog, account-deletion purgeMedicalData, MedicalRecords",现有多条清空用例，建议做完整闭环
+新增建议-完整业务闭环,CX-BIZ-SEC-002,九、账号与安全闭环,AccountSecurity/DeletionPending,注销进入冷静期并撤销恢复,P1,Hard,UI E2E + 专用账号,专用账号进入账号与安全 → 注销账号 → 等待读秒 → 输入确认注销 → 短信验证 → 完成页退出登录 → 原手机号重新登录 → 进入冷静期页 → 点击撤销注销。,用户状态变 pending_deletion；业务页被拦截；重新登录可撤销；撤销后 /chat、/materials、/medical-records 可访问。,破坏性，必须可回滚专用账号；用固定验证码。,"DeleteAccountWizard, account status/cancel, active-account middleware, DeletionPending",现有冷静期原子未全部实现；建议闭环专项
+新增建议-完整业务闭环,CX-BIZ-VOICE-001,十、语音与原生能力闭环,ASR/Chat/TTS,语音输入识别、发送和回答播放,P1,Hard,Native bridge E2E,点击语音输入 → 授权麦克风 → 录音一段测试语音或注入音频 → ASR partial/final 进入输入框 → 发送 → AI 回复完成 → 开启 TTS 播放/停止。,ASR WebSocket 连接正常；输入框文本正确；生成中语音按钮禁用；TTS ticket/播放状态正常且可停止。,需要设备权限和音频注入能力；适合 bridge suite。,"useVoiceRecorder, /api/chat/asr, useTTSPlayer, /api/chat/tts, nativeBridge",现有 bridge/语音原子覆盖，建议完整语音对话闭环
+新增建议-完整业务闭环,CX-BIZ-ADMIN-001,十一、干预素材管理闭环,MaterialsAdmin/InterventionMaterial,新建干预素材并在聊天可触发,P2,Hard,Dev-only UI/API E2E,在 dev/localhost 打开素材上传台 → 新建测试素材，填写触发条件、总览图和步骤图 → 保存 → 可选同步/发布到当前环境 → 聊天发送命中场景。,素材保存成功；catalog 刷新；聊天中 show_intervention_material 可匹配并展示该素材；素材可归档/清理。,仅非 prod；需要图片夹具和清理策略。,"MaterialsAdmin.tsx, routes/intervention-materials.ts, intervention-material-runtime catalog",现有仅验证入口可见性，未覆盖管理闭环
+新增建议-完整业务闭环,CX-BIZ-PUSH-001,十二、原生推送与路由闭环,NativePush/Router,原生推送打开指定业务路由,P2,Med,Native bridge E2E,登录后注入 cx-native-ready 和 push registrationChanged → 绑定设备 → 模拟 native push open 事件，route=/materials 或 /chat/:sessionId。,前端调用 push bind；收到 open 事件后 normalizeNativeRoute 并 navigate；目标页面正常加载。,可在 WebView 执行 JS 触发 CustomEvent。,"App.tsx NativePushEventHandler, routes/push.ts",新增建议
+新增建议-完整业务闭环,CX-BIZ-READ-001,十三、阅读设置闭环,ReadingSettings/Chat/Materials,字号设置影响聊天、沟通卡和跟练卡,P1,Med,UI E2E + computed style 校验（WeChat_H5_POC 已接入）,准备沟通卡和跟练卡 → 阅读设置切小字号 → 分别打开沟通卡详情和跟练卡详情读取文本 font-size → 阅读设置切大字号 → 再次读取。,沟通卡详情“就诊目标”和跟练卡详情“当前进度”等业务卡片文本字号随阅读设置由小变大；用例结束恢复中字号。,现有 CX-READ-004 可扩展材料两类详情。,"ReadingSettings.tsx, settings store, AssistantMessage, CommunicationCardPanel, InterventionMaterialInline",WeChat_H5_POC 已实现：CX-BIZ-READ-001；覆盖阅读设置对两类材料卡详情字号的真实影响。
+新增建议-边界补充,CX-BIZ-COMM-007,三、医患沟通卡片闭环,Materials/CommunicationCard,沟通卡编辑非法输入校验,P1,Med,UI E2E + API 校验（WeChat_H5_POC 已接入）,打开已保存沟通卡 → 编辑态分别尝试清空标题、填写非法日期、清空就诊目标 → 点击保存 → 取消编辑后读取详情/API。,标题为空、cardDate 非 YYYY-MM-DD、visitPurpose 为空均展示后端校验错误；保存失败后仍停留编辑态；取消后已保存 draft 不被污染。,无沟通卡时自动先生成/保存一张作为前置数据。,"CommunicationCardPanel.tsx, Materials.tsx, services/communication-card.ts updateCommunicationCard",WeChat_H5_POC 已实现：CX-BIZ-COMM-007；覆盖沟通卡编辑字段的必填/格式边界。
+新增建议-边界补充,CX-BIZ-PROFILE-005,六、AI 档案更新审批闭环,MedicalRecords/ProfilePatch,隐藏健康档案字段不可绕过更新,P1,Med,API 自动化 + UI 授权前置（WeChat_H5_POC 已接入）,将账号个人信息设为男性且当前关注为乳腺肿瘤诊疗 → 调用 /medical/profile/patch 尝试更新 menstrualStatus → 查询健康档案。,接口返回字段不允许更新错误；隐藏字段不会写入 profileData；用例结束恢复女性乳腺肿瘤诊疗默认资料。,用于防止绕过前端可见性直接写入隐藏医疗字段。,"routes/medical.ts profile/patch, profile-validation.ts validateMedicalFieldAllowed, resolveVisibleMedicalFields",WeChat_H5_POC 已实现：CX-BIZ-PROFILE-005；覆盖隐藏字段服务端校验。
